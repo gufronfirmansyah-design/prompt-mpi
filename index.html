@@ -746,6 +746,12 @@
             <input id="gradeDetail" name="gradeDetail" type="text" placeholder="Misal: Kelas 10 / Fase E" value="Kelas 10 (Fase E)" required>
           </div>
 
+          <div class="field">
+            <label for="classList">Daftar pilihan rombel / kelas (Menu Dropdown)</label>
+            <input id="classList" name="classList" type="text" placeholder="Misal: X-A, X-B, X-C atau X TKJ 1, X TKJ 2" value="X-A, X-B, X-C">
+            <p class="hint">Tuliskan dipisah koma. AI akan membuat menu dropdown (bukan ketik bebas) di cover media agar siswa memilih kelasnya dengan rapi.</p>
+          </div>
+
           <div class="field" id="smkFieldWrapper">
             <label for="vocationalField">Program keahlian / Jurusan SMK</label>
             <select id="vocationalField" name="vocationalField">
@@ -1165,9 +1171,9 @@
   // Module Master Registry with Pedagogical Phase Tagging
   const moduleDefinitions = {
     cover: {
-      name: 'Cover, TP & Petunjuk Belajar',
+      name: 'Cover, Identitas Siswa & Petunjuk',
       phase: 'Orientasi',
-      desc: 'Judul menarik, mapel, kelas, alokasi waktu, serta tujuan pembelajaran bahasa ramah siswa.'
+      desc: 'Judul menarik, mapel, kelas, formulir identitas siswa (Nama & menu dropdown pilihan Kelas/Rombel), alokasi waktu, serta tujuan pembelajaran bahasa ramah siswa.'
     },
     starter: {
       name: 'Pertanyaan Pemantik & Uji Miskonsepsi',
@@ -1175,9 +1181,9 @@
       desc: 'Ajukan fenomena nyata mengusik rasa ingin tahu siswa dan deteksi dugaan awal (miskonsepsi) sebelum teori disajikan.'
     },
     material: {
-      name: 'Eksplorasi Konsep Bertahap',
+      name: 'Eksplorasi Konsep Bertahap (Chunking)',
       phase: 'Memahami',
-      desc: 'Submateri ringkas, analogi konkret kejuruan/lingkungan, kartu interaktif, dan pertanyaan reflektif pendek. Hindari teks panjang.'
+      desc: 'Materi dipecah menjadi 2–4 sub-materi terfokus (chunking). Setiap sub-materi disajikan terpisah per kartu/langkah, dilengkapi analogi kontekstual dan interaksi reflektif mikro. Bebas dari teks panjang.'
     },
     subquiz: {
       name: 'Cek Pemahaman (Kuis Submateri)',
@@ -1386,7 +1392,7 @@
     const connectHint = document.getElementById('connectHint');
     if (connectVal === 'sheets') {
       const serviceName = (platformVal === 'canva' && !gh) ? 'Canva Sheets' : 'Google Sheets';
-      connectHint.textContent = `Prompt akan menyusun instruksi pengiriman data siswa ke ${serviceName} (via Google Apps Script / webhook). Tetap fallback ke penyimpanan lokal bila belum dikonfigurasi.`;
+      connectHint.textContent = `Siswa akan diminta mengisi Nama & Kelas di halaman Cover. Data identitas beserta nilai kuis & progres akan otomatis dikirim ke ${serviceName} agar guru dapat merekap capaian tiap siswa.`;
     } else if (connectVal === 'csv') {
       connectHint.textContent = `Siswa dan guru dapat mengunduh rekaman skor dan bukti belajar langsung sebagai berkas tabel .CSV / Cetak PDF di peramban tanpa internet.`;
     } else {
@@ -1475,6 +1481,7 @@
     // ==========================================================
     const eduLevel = val('educationLevel') || 'SMK';
     const gradeText = val('gradeDetail') || '-';
+    const classListText = val('classList') || 'X-A, X-B, X-C';
     const isSMKLevel = eduLevel === 'SMK';
     const vocation = isSMKLevel ? val('vocationalField') : 'Pendidikan Umum (' + eduLevel + ')';
 
@@ -1484,7 +1491,10 @@
     let layer1 = `## 🎓 LAPIS 1: DESAIN PEMBELAJARAN (INSTRUCTIONAL DESIGN)\n\n`;
     layer1 += `### 1. Profil Pembelajar & Konteks Belajar\n`;
     layer1 += `- **Mata Pelajaran:** ${val('subject') || '-'}\n`;
-    layer1 += `- **Jenjang & Kelas:** ${eduLevel} — ${gradeText}\n`;
+    layer1 += `- **Jenjang & Tingkat Kelas:** ${eduLevel} — ${gradeText}\n`;
+    if (classListText) {
+      layer1 += `- **Rombongan Belajar / Pilihan Kelas Sasaran:** ${classListText}\n`;
+    }
     if (isSMKLevel) {
       layer1 += `- **Program Keahlian / Jurusan SMK:** ${vocation}\n`;
       layer1 += `*Instruksi Konteks Vokasi:* Hubungkan seluruh konsep ilmiah, contoh konkret, dan studi kasus dengan bidang keahlian **${vocation}** agar pembelajaran terasa nyata dan aplikatif.\n`;
@@ -1540,24 +1550,24 @@
       layer2 += `${idx + 1}. **${def.name}** [${def.phase}]: ${def.desc}\n`;
     });
 
+    // Identitas Siswa & Menu Dropdown Pilihan Kelas di Cover
+    layer2 += `\n### 2. Formulir Identitas Siswa & Menu Dropdown Kelas di Halaman Cover\n`;
+    layer2 += `- **Input Nama Lengkap:** Kolom input teks wajib untuk nama lengkap siswa.\n`;
+    layer2 += `- **Pilihan Kelas Berbentuk Menu Dropdown (\`<select>\`):** Pemilihan kelas WAJIB menggunakan dropdown menu dengan daftar opsi: **${classListText}** (serta opsi pertama: \`-- Pilih Kelas --\`). DILARANG membuat input kelas berupa teks bebas agar data nama kelas siswa tidak berantakan atau salah ketik.\n`;
+    layer2 += `- **Validasi Masuk:** Tombol "Mulai Belajar" hanya bisa diklik jika siswa telah mengisi nama dan memilih kelas dari dropdown.\n`;
+    if (val('connect') === 'sheets') {
+      layer2 += `- **Pengikatan Sesi & Rekap Nilai:** Pilihan kelas dan nama siswa tersebut otomatis dikirim ke spreadsheet bersama rekapitulasi skor kuis dan status ketuntasan siswa.\n`;
+    }
+
+    // Penegasan Chunking Materi
+    if (isModuleChecked('material')) {
+      layer2 += `\n### 3. Strategi Chunking Materi (Beban Kognitif Terkelola)\n`;
+      layer2 += `- **Struktur Tiap Sub-Materi:** Setiap chunk wajib memuat: (1) Intisari konsep (maksimal 2–3 paragraf santun), (2) Contoh konkret atau analogi kontekstual (diselaraskan dengan kejuruan/lingkungan siswa), (3) Grafis ilustrasi inline SVG yang memperjelas konsep, dan (4) Satu pertanyaan interaktif/cek pemahaman singkat sebelum siswa diizinkan menekan tombol navigasi ke sub-materi selanjutnya.\n`;
+    }
+
     // Simulasi & Game Guidelines
     if (isModuleChecked('simulation')) {
-      layer2 += `\n### 2. Standar Simulasi Interaktif\n`;
-      layer2 += `- **Prinsip Variabel Nyata:** Simulasi wajib memiliki variabel independen terukur (misal debit, volume, sudut, suhu) dengan rentang yang masuk akal.\n`;
-      layer2 += `- **Visualisasi Sebab-Akibat:** Setiap pergeseran slider/switch langsung mengubah output grafis interaktif (SVG) dan nilai numerik seketika.\n`;
-      layer2 += `- **Pertanyaan Interpretasi:** Sediakan tombol uji prediksi atau panduan pertanyaan agar siswa menyimpulkan pola perubahan, bukan hanya memainkan tombol tanpa arah.\n`;
-      if (form.elements['simStrictFormula'] && form.elements['simStrictFormula'].checked) {
-        layer2 += `- **Integritas Rumus:** Gunakan rumus fisika/matematika/ekonomi yang absah. Jangan mengarang hubungan numerik sembarangan!\n`;
-      }
-    }
-
-    if (isModuleChecked('game')) {
-      layer2 += `\n### 3. Standar Game Edukatif\n`;
-      layer2 += `- **Justifikasi Pedagogis:** Game hanya digunakan jika mekanismenya memperkuat pencapaian TP (misal: klasifikasi kategori dengan drag-drop, mencocokkan logika sebab-akibat, atau tebak pola).\n`;
-      layer2 += `- **Bebas Tekanan Negatif:** Jangan memberi penalti yang membuat frustrasi. Berikan petunjuk saat keliru dan kesempatan mencoba ulang tanpa batas.\n`;
-    }
-
-    // Diferensiasi Kesiapan Belajar
+      layer2 += `\n### Standar Simulasi Interaktif\n`;
     if (val('differentiation') === 'readiness') {
       layer2 += `\n### 4. Diferensiasi Kesiapan Belajar (Scaffolding Siswa)\n`;
       layer2 += `Sediakan opsi tingkat bantuan pada modul materi atau studi kasus:\n`;
@@ -1630,7 +1640,11 @@
     const conn = val('connect');
     if (conn === 'sheets') {
       const sheetPlatform = (val('platform') === 'canva' && !gh) ? 'Canva Sheets' : 'Google Sheets';
-      layer3 += `- **Penyimpanan Data (${sheetPlatform}):** Rancang fungsi pengiriman hasil ke ${sheetPlatform} (via Apps Script Web App). Sertakan contoh skrip backend dan penanganan fallback lokal jika koneksi spreadsheet gagal atau belum disiapkan.\n`;
+      layer3 += `- **Penyimpanan Data & Rekap Nilai Siswa (${sheetPlatform}):**\n` +
+                `  1. Aplikasi wajib merekam identitas siswa dari cover: **Nama Siswa** dan **Kelas** (berdasarkan pilihan dropdown: ${classListText}).\n` +
+                `  2. Saat siswa menyelesaikan kuis/evaluasi, aplikasi mengirimkan rekapitulasi data: [Timestamp, Nama Siswa, Kelas, Skor Kuis Formatif, Skor Kuis Akhir, Status Ketuntasan (Tuntas / Perlu Pengayaan), dan Jawaban Refleksi Singkat] ke ${sheetPlatform}.\n` +
+                `  3. Sertakan contoh script webhook/Google Apps Script (fungsi \`doPost(e)\`) yang ringkas dan siap disalin guru ke Apps Script agar langsung terhubung ke kolom Google Sheets secara otomatis.\n` +
+                `  4. Sediakan indikator umpan balik visual saat data terkirim (misal: badge "✅ Nilai Anda berhasil terekam di jurnal guru") dan penanganan fallback jika koneksi internet siswa tidak stabil.\n`;
     } else if (conn === 'csv') {
       layer3 += `- **Penyimpanan Data:** Simpan riwayat di localStorage dan sediakan tombol "Ekspor Data (.CSV)" untuk mengunduh rekap skor siswa langsung ke ponsel/komputer.\n`;
     } else {
