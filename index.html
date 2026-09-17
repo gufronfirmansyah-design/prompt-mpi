@@ -816,6 +816,12 @@
             </select>
           </div>
 
+          <div id="customTpWrapper" class="field full" hidden>
+            <label for="customTP" class="required">Rumusan Tujuan Pembelajaran Anda</label>
+            <textarea id="customTP" name="customTP" placeholder="Contoh: Peserta didik mampu menganalisis hubungan debit air dengan daya listrik pompa dan merekomendasikan efisiensi energi yang optimal."></textarea>
+            <p class="hint">Tuliskan tujuan pembelajaran spesifik yang ingin dicapai siswa melalui media ini.</p>
+          </div>
+
           <fieldset class="fieldset-reset full">
             <legend class="legend-title required">Level kognitif yang dilatih (Centang Taksonomi Bloom yang relevan)</legend>
             <div class="check-grid">
@@ -828,11 +834,6 @@
             </div>
             <p class="hint">Pilih level berpikir yang ingin dicapai agar kedalaman kuis dan simulasi tidak sekadar hafalan.</p>
           </fieldset>
-
-          <div id="customTpWrapper" class="field full" hidden>
-            <label for="customTP">Rumusan Tujuan Pembelajaran Anda</label>
-            <textarea id="customTP" name="customTP" placeholder="Contoh: Peserta didik mampu menganalisis hubungan debit air dengan daya listrik pompa dan merekomendasikan efisiensi energi yang optimal."></textarea>
-          </div>
 
           <!-- Miskonsepsi Siswa -->
           <div class="field full">
@@ -1567,9 +1568,18 @@
 
     // Simulasi & Game Guidelines
     if (isModuleChecked('simulation')) {
-      layer2 += `\n### Standar Simulasi Interaktif\n`;
+      layer2 += `\n### 4. Standar Simulasi Interaktif\n`;
+      layer2 += `- Simulasi wajib memiliki kondisi awal jelas, variabel kontrol riil (slider/toggle), indikator akibat teramati, dan pertanyaan refleksi interpretasi.\n`;
+      layer2 += `- Dilarang mengarang formula atau hubungan fiktif yang tidak valid secara ilmiah.\n`;
+    }
+
+    if (isModuleChecked('game')) {
+      layer2 += `\n### 5. Standar Game Edukasi\n`;
+      layer2 += `- Game edukasi hanya digunakan jika mekanismenya memperkuat pencapaian TP secara langsung (misal: klasifikasi kategori, drag-and-drop komponen, atau tebak pola).\n`;
+    }
+
     if (val('differentiation') === 'readiness') {
-      layer2 += `\n### 4. Diferensiasi Kesiapan Belajar (Scaffolding Siswa)\n`;
+      layer2 += `\n### 6. Diferensiasi Kesiapan Belajar (Scaffolding Siswa)\n`;
       layer2 += `Sediakan opsi tingkat bantuan pada modul materi atau studi kasus:\n`;
       layer2 += `- **Perlu Bimbingan:** Tampilkan kartu petunjuk bertahap (*hint*) dan glosarium istilah sederhana.\n`;
       layer2 += `- **Cukup Mahir:** Alur standar mandiri dengan pertanyaan pemandu langsung.\n`;
@@ -1578,7 +1588,7 @@
 
     // Mode Guru (Teacher Preview)
     if (form.elements['teacherModeToggle'] && form.elements['teacherModeToggle'].checked) {
-      layer2 += `\n### 5. Mode Guru (Teacher Preview)\n`;
+      layer2 += `\n### 7. Mode Guru (Teacher Preview)\n`;
       layer2 += `Sediakan tombol/toggle tersembunyi berlabel **"Mode Guru / Pratinjau Pengajar"** (dapat dibuka dengan klik ikon kunci atau tombol khusus). Jika dibuka, tampilkan:\n`;
       layer2 += `- Ringkasan TP dan indikator capaian.\n`;
       layer2 += `- Kunci jawaban seluruh kuis beserta alasan ilmiahnya.\n`;
@@ -1588,16 +1598,7 @@
 
     // Blueprint Asesmen
     if (hasQuiz) {
-      layer2 += `\n### 6. Blueprint Asesmen & Evaluasi Kognitif\n`;
-      if (isModuleChecked('subquiz')) {
-        layer2 += `- **Kuis Tiap Submateri:** ${val('subCount')} butir soal formatif langsung dengan feedback instan edukatif.\n`;
-      }
-      if (isModuleChecked('finalquiz')) {
-        layer2 += `- **Kuis Akhir:** ${val('finalCount')} butir soal evaluasi komprehensif.\n`;
-      }
-      layer2 += `- **Distribusi Kognitif:** ${val('bloomProportion')}\n`;
-      layer2 += `- **Variasi Bentuk Soal:** ${selectedQuestionTypes.length > 0 ? selectedQuestionTypes.join(', ') : 'AI variasikan secara proporsional'}.\n`;
-      layer2 += `- **Metadata Internal Soal:** Setiap soal wajib memuat penanda internal (TP yang diukur, level kognitif C2/C3/C4, opsi jawaban, kunci, dan penjelasan alasan benar/salah).\n`;
+      layer2 += `\n### 8. Blueprint Asesmen & Evaluasi Kognitif\n`;
       layer2 += `- **Penilaian Jujur:** Hanya nilai otomatis soal-soal dengan kunci objektif pasti. Jangan mengklaim "penilaian kecerdasan buatan" terhadap jawaban esai bebas tanpa backend terhubung.`;
     }
 
