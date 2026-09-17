@@ -3,2091 +3,643 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Instructional Design & Prompt Engine untuk media pembelajaran interaktif berbasis web, kurikulum mendalam, dan asesmen bermutu.">
-  <title>PromptLab V3 — Generator Media Pembelajaran Interaktif</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230d3b66'/%3E%3Cpath d='M16 20h32v24H16z' fill='%23fff'/%3E%3Cpath d='M22 26h20M22 32h15M22 38h11' stroke='%2327a8e0' stroke-width='4' stroke-linecap='round'/%3E%3Ccircle cx='47' cy='46' r='9' fill='%23f4b942'/%3E%3Cpath d='M43 46l3 3 5-7' fill='none' stroke='%230d3b66' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
-
+  <meta name="description" content="Generator prompt Instructional Design 3-Lapis untuk media pembelajaran PJJ/MPI.">
+  <title>PromptLab Media Interaktif v3</title>
   <style>
     :root {
-      --ink: #0f2740;
-      --muted: #526e88;
-      --navy: #0a2d52;
-      --navy-light: #103d6d;
-      --blue: #1672b3;
-      --blue-hover: #105c92;
-      --sky: #e9f5fc;
-      --cyan: #229dd4;
-      --amber: #f2b43b;
-      --amber-hover: #dfa127;
-      --paper: #f4f8fb;
-      --card-bg: rgba(255, 255, 255, 0.96);
-      --line: #d1e2ee;
-      --line-subtle: #e5f0f7;
-      --danger: #be3932;
-      --danger-bg: #fff5f5;
-      --success: #137d59;
-      --success-bg: #eafaf4;
-      --purple: #6b46c1;
-      --purple-bg: #f3e8ff;
-      --shadow-sm: 0 4px 14px rgba(10, 45, 82, .06);
-      --shadow: 0 16px 36px rgba(10, 45, 82, .08);
-      --shadow-lg: 0 24px 60px rgba(10, 45, 82, .18);
+      --ink: #102a43; --muted: #627d98; --navy: #0d3b66; --blue: #1877b9;
+      --sky: #eaf7fd; --cyan: #27a8e0; --amber: #f4b942; --paper: #f5f9fc;
+      --white: #ffffff; --line: #d7e4ee; --danger: #c2413a; --success: #14825d;
       --radius: 16px;
     }
-
     * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body {
-      margin: 0;
-      min-height: 100vh;
-      color: var(--ink);
-      background:
-        radial-gradient(circle at 10% -5%, rgba(34, 157, 212, .12), transparent 32rem),
-        linear-gradient(180deg, #f8fbfd 0%, var(--paper) 100%);
-      font: 16px/1.55 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    }
-
+    html { scroll-behavior: smooth; font-family: Inter, ui-sans-serif, system-ui, sans-serif; background: #f8fbfd; color: var(--ink); }
+    body { margin: 0; min-height: 100vh; display: flex; flex-direction: column; }
     button, input, select, textarea { font: inherit; }
-    button, select, input[type="checkbox"], input[type="radio"] { cursor: pointer; }
-    button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
-      outline: 3px solid rgba(34, 157, 212, .35);
-      outline-offset: 2px;
-    }
-
-    .topbar {
-      position: sticky;
-      top: 0;
-      z-index: 30;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      padding: 12px clamp(16px, 4vw, 48px);
-      color: #fff;
-      background: rgba(10, 45, 82, .96);
-      backdrop-filter: blur(14px);
-      box-shadow: 0 6px 20px rgba(10, 45, 82, .16);
-    }
-    .brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
-    .brand-mark {
-      display: grid;
-      place-items: center;
-      width: 40px;
-      height: 40px;
-      flex: 0 0 auto;
-      border-radius: 12px;
-      color: var(--navy);
-      background: var(--amber);
-      font-weight: 900;
-      box-shadow: inset 0 -3px 0 rgba(0,0,0,.08);
-      user-select: none;
-    }
-    .brand-name { font-size: 1.05rem; font-weight: 800; letter-spacing: .01em; white-space: nowrap; }
-    .brand-desc { color: #d0e7f7; font-size: .8rem; white-space: nowrap; }
-
-    .save-state {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 6px 12px;
-      border-radius: 99px;
-      background: rgba(255,255,255,.1);
-      color: #d8ecf6;
-      font-size: .82rem;
-      white-space: nowrap;
-    }
-    .save-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #61d3a5;
-      box-shadow: 0 0 0 3px rgba(97, 211, 165, .2);
-      transition: background-color .2s ease;
-    }
-    .save-dot.syncing { background: var(--amber); box-shadow: 0 0 0 3px rgba(242, 180, 59, .25); }
-
-    .shell {
-      width: min(1560px, 100%);
-      margin: 0 auto;
-      padding: 24px clamp(16px, 3vw, 44px) 72px;
-    }
-
-    .intro {
-      display: flex;
-      justify-content: space-between;
-      gap: 24px;
-      align-items: flex-end;
-      margin-bottom: 22px;
-    }
-    .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      margin: 0 0 6px;
-      color: var(--blue);
-      font-size: .78rem;
-      font-weight: 850;
-      letter-spacing: .12em;
-      text-transform: uppercase;
-    }
-    .eyebrow::before { content: ""; width: 22px; height: 3px; border-radius: 99px; background: var(--amber); }
-    h1 { margin: 0; max-width: 860px; font-size: clamp(1.65rem, 3vw, 2.45rem); line-height: 1.15; letter-spacing: -.03em; color: var(--navy); }
-    .intro p { margin: 8px 0 0; max-width: 800px; color: var(--muted); font-size: .95rem; }
-
-    .header-aside {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 10px;
-    }
-    .completion-card {
-      min-width: 230px;
-      padding: 12px 18px;
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      background: rgba(255,255,255,.9);
-      backdrop-filter: blur(8px);
-      box-shadow: var(--shadow-sm);
-    }
-    .completion-row { display: flex; justify-content: space-between; gap: 16px; margin-bottom: 7px; font-size: .84rem; font-weight: 750; color: var(--navy); }
-    .progress-track { height: 8px; overflow: hidden; border-radius: 99px; background: #dceaf2; }
-    .progress-fill { width: 0%; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--blue), var(--cyan)); transition: width .25s ease; }
-
-    .preset-bar {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 12px 18px;
-      margin-bottom: 22px;
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      background: var(--card-bg);
-      box-shadow: var(--shadow-sm);
-    }
-    .preset-selector-group {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-    .preset-label {
-      font-size: .84rem;
-      font-weight: 750;
-      color: var(--navy);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .preset-select {
-      min-height: 38px;
-      padding: 6px 12px;
-      border-radius: 9px;
-      border: 1px solid #c2d4e2;
-      font-size: .86rem;
-      background: #fff;
-    }
-    .preset-btns {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .workspace {
-      display: grid;
-      grid-template-columns: minmax(0, 1.25fr) minmax(380px, .85fr);
-      gap: 24px;
-      align-items: start;
-    }
-
-    .card {
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background: var(--card-bg);
-      box-shadow: var(--shadow);
-    }
-    .form-card { padding: clamp(20px, 3vw, 32px); }
-    .preview-card {
-      position: sticky;
-      top: 78px;
-      max-height: calc(100vh - 96px);
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      z-index: 10;
-    }
-
-    .panel + .panel {
-      margin-top: 30px;
-      padding-top: 26px;
-      border-top: 1px solid var(--line);
-    }
-    .panel-head { margin-bottom: 20px; }
-    .panel-head h2 { margin: 0 0 4px; font-size: 1.25rem; letter-spacing: -.02em; color: var(--navy); display: flex; align-items: center; gap: 8px; }
-    .panel-head p { margin: 0; color: var(--muted); font-size: .88rem; }
-
-    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
-    .full { grid-column: 1 / -1; }
-    .field { min-width: 0; }
-    label, .label { display: block; margin: 0 0 6px; color: #234761; font-size: .88rem; font-weight: 750; }
-    .required::after { content: " *"; color: var(--danger); }
-    .hint { margin: 6px 0 0; color: var(--muted); font-size: .81rem; line-height: 1.45; }
-
-    input[type="text"], input[type="number"], select, textarea {
-      width: 100%;
-      border: 1px solid #bfd0dd;
-      border-radius: 11px;
-      color: var(--ink);
-      background: #fff;
-      transition: border-color .18s ease, box-shadow .18s ease, background-color .18s ease;
-    }
-    input[type="text"], input[type="number"], select { min-height: 44px; padding: 8px 12px; }
-    textarea { min-height: 96px; resize: vertical; padding: 10px 12px; line-height: 1.5; }
-    input:hover, select:hover, textarea:hover { border-color: #87adc4; }
-    input:focus, select:focus, textarea:focus { border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(34,157,212,.18); }
+    button, select, input[type="checkbox"] { cursor: pointer; }
     
-    .invalid {
-      border-color: var(--danger) !important;
-      background-color: var(--danger-bg) !important;
-      box-shadow: 0 0 0 3px rgba(190, 57, 50, .15) !important;
+    .topbar { position: sticky; top: 0; z-index: 30; display: flex; justify-content: space-between; padding: 16px 32px; background: rgba(13,59,102,.98); color: #fff; box-shadow: 0 4px 12px rgba(0,0,0,.1); }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 1.1rem; }
+    
+    .workspace { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 24px; max-width: 1440px; margin: 32px auto; padding: 0 32px; flex: 1; align-items: start; }
+    .card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 10px 30px rgba(13,59,102,.08); padding: 28px; }
+    
+    .panel-title { font-size: 1.25rem; font-weight: 800; color: var(--navy); margin: 0 0 16px; padding-bottom: 12px; border-bottom: 2px solid var(--sky); }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+    .field.full { grid-column: 1 / -1; }
+    label { display: block; font-weight: 700; font-size: 0.9rem; color: #284b63; margin-bottom: 8px; cursor: pointer; }
+    input[type="text"], input[type="number"], select, textarea, input[type="password"] {
+      width: 100%; padding: 10px 14px; border: 1px solid #bfd0dd; border-radius: 10px; background: #fff; transition: all 0.2s;
     }
-
-    fieldset.fieldset-reset {
-      display: block;
-      width: 100%;
-      border: 0;
-      padding: 0;
-      margin: 0;
-      min-width: 0;
-      clear: both;
-    }
-    legend.legend-title {
-      display: block;
-      width: 100%;
-      float: none;
-      clear: both;
-      margin: 0 0 10px 0;
-      padding: 0;
-      color: #234761;
-      font-size: .88rem;
-      font-weight: 750;
-    }
-
-    .check-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 14px; }
-    .check-line {
-      display: flex;
-      align-items: flex-start;
-      gap: 9px;
-      margin: 0;
-      color: #234761;
-      font-size: .88rem;
-      font-weight: 600;
-      cursor: pointer;
-      user-select: none;
-    }
-    .check-line input { width: 18px; height: 18px; flex: 0 0 auto; margin-top: 2px; accent-color: var(--blue); }
-
-    .module-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin-top: 10px;
-      width: 100%;
-      clear: both;
-    }
-    .module-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 10px 14px;
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      background: #fff;
-      transition: background-color .15s ease, border-color .15s ease;
-      width: 100%;
-      box-sizing: border-box;
-    }
-    .module-item:hover { border-color: #8bb1cb; background: #fafcfe; }
-    .module-item.inactive { opacity: .55; background: #fcfdfe; }
-    .module-main {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      min-width: 0;
-      flex: 1;
-    }
-    .module-order-badge {
-      display: grid;
-      place-items: center;
-      width: 24px;
-      height: 24px;
-      border-radius: 7px;
-      background: var(--sky);
-      color: var(--navy);
-      font-size: .78rem;
-      font-weight: 800;
-      flex-shrink: 0;
-    }
-    .module-actions {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      flex-shrink: 0;
-    }
-    .btn-icon-order {
-      width: 32px;
-      height: 32px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #f7fafc;
-      color: var(--navy);
-      display: grid;
-      place-items: center;
-      font-size: .85rem;
-      font-weight: 800;
-      padding: 0;
-      cursor: pointer;
-      transition: all .15s ease;
-    }
-    .btn-icon-order:hover:not(:disabled) { background: var(--sky); border-color: var(--blue); color: var(--blue); }
-    .btn-icon-order:disabled { opacity: .25; cursor: not-allowed; }
-
-    .conditional {
-      grid-column: 1 / -1;
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 16px;
-      padding: 16px;
-      border: 1px solid #cce4f1;
-      border-radius: 13px;
-      background: #f5fbfe;
-    }
-    .conditional[hidden], [hidden] { display: none !important; }
-
-    details {
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      padding: 12px 14px;
-      background: #fafcfe;
-      transition: border-color .15s ease;
-    }
-    details[open] { border-color: #a5cde6; background: #fdfefe; }
-    details summary {
-      cursor: pointer;
-      color: var(--blue);
-      font-weight: 750;
-      font-size: .88rem;
-      user-select: none;
-    }
-
-    .badge-soft {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      padding: 2px 8px;
-      border-radius: 6px;
-      font-size: .75rem;
-      font-weight: 750;
-      background: var(--sky);
-      color: var(--navy);
-    }
-
-    .panel-actions {
-      position: sticky;
-      bottom: 0;
-      z-index: 20;
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      margin-top: 28px;
-      padding: 16px 0 6px;
-      background: rgba(255, 255, 255, 0.98);
-      backdrop-filter: blur(8px);
-      border-top: 2px solid var(--line);
-      flex-wrap: wrap;
-    }
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      min-height: 42px;
-      padding: 9px 18px;
-      border: 1px solid transparent;
-      border-radius: 10px;
-      font-weight: 750;
-      font-size: .88rem;
-      transition: transform .15s ease, box-shadow .15s ease, background-color .15s ease, border-color .15s ease;
-      text-decoration: none;
-    }
-    .btn:hover { transform: translateY(-1px); }
-    .btn:active { transform: translateY(0); }
-    .btn-sm { min-height: 36px; padding: 6px 12px; font-size: .82rem; border-radius: 8px; }
-    .btn-primary { color: #fff; background: var(--blue); box-shadow: 0 6px 14px rgba(22,114,179,.22); }
-    .btn-primary:hover { background: var(--blue-hover); }
-    .btn-secondary { color: var(--navy); border-color: #bed1df; background: #fff; }
-    .btn-secondary:hover { background: #f2f8fb; }
-    .btn-accent { color: var(--navy); background: var(--amber); box-shadow: 0 6px 16px rgba(242,180,59,.28); font-weight: 850; }
-    .btn-accent:hover { background: var(--amber-hover); }
-    .btn-danger { color: #fff; background: var(--danger); }
-    .btn-danger:hover { background: #a22f29; }
-
-    .mobile-generate {
-      display: none;
-      position: fixed;
-      left: 14px;
-      right: 14px;
-      bottom: 14px;
-      z-index: 50;
-      box-shadow: 0 12px 32px rgba(10,45,82,.3);
-    }
-    .mobile-generate .btn {
-      width: 100%;
-      min-height: 48px;
-      font-size: .95rem;
-      border-radius: 12px;
-    }
-
-    .preview-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-      padding: 16px 20px;
-      color: #fff;
-      background: var(--navy);
-      flex-shrink: 0;
-    }
-    .preview-head h2 { margin: 0; font-size: 1.05rem; }
-    .preview-meta { color: #cfe8f5; font-size: .8rem; }
-    .badge-status {
-      display: inline-block;
-      padding: 3px 9px;
-      border-radius: 99px;
-      font-size: .72rem;
-      font-weight: 750;
-      background: rgba(255,255,255,.18);
-    }
-
-    .output-wrapper {
-      position: relative;
-      background: #fcfeff;
-      flex: 1;
-      min-height: 240px;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-    #promptOutput {
-      display: block;
-      width: 100%;
-      flex: 1;
-      height: 100%;
-      min-height: 260px;
-      margin: 0;
-      padding: 18px 20px;
-      border: 0;
-      border-radius: 0;
-      color: #153247;
-      background: transparent;
-      font: .86rem/1.65 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      resize: none;
-      overflow-y: auto;
-    }
-    .edit-indicator {
-      display: none;
-      position: absolute;
-      top: 10px;
-      right: 12px;
-      padding: 3px 8px;
-      background: #eef8ff;
-      border: 1px solid #bee0f5;
-      color: var(--blue);
-      border-radius: 6px;
-      font-size: .72rem;
-      font-weight: 700;
-      pointer-events: none;
-      z-index: 5;
-    }
-    .edit-indicator.active { display: block; }
-
-    .preview-foot {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 12px;
-      padding: 12px 18px;
-      border-top: 1px solid var(--line);
-      background: #f8fbfd;
-      flex-shrink: 0;
-    }
-    .stats-container {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-    .stats-text { font-size: .79rem; color: var(--muted); }
-    .stats-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 2px 7px;
-      background: #e8f2f8;
-      border-radius: 6px;
-      font-size: .74rem;
-      font-weight: 700;
-      color: var(--navy);
-    }
-
-    .toast {
-      position: fixed;
-      right: 22px;
-      bottom: 22px;
-      z-index: 100;
-      max-width: min(420px, calc(100vw - 32px));
-      padding: 13px 18px;
-      border-radius: 12px;
-      color: #fff;
-      background: var(--navy);
-      box-shadow: var(--shadow-lg);
-      opacity: 0;
-      transform: translateY(14px);
-      pointer-events: none;
-      transition: opacity .22s ease, transform .22s ease;
-      font-size: .88rem;
-    }
-    .toast.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
-
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      z-index: 110;
-      background: rgba(10, 45, 82, .55);
-      backdrop-filter: blur(4px);
-      display: grid;
-      place-items: center;
-      padding: 16px;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity .2s ease;
-    }
-    .modal-backdrop.active { opacity: 1; pointer-events: auto; }
-    .modal-box {
-      width: min(480px, 100%);
-      background: #fff;
-      border-radius: 18px;
-      padding: 24px;
-      box-shadow: var(--shadow-lg);
-      transform: scale(.95);
-      transition: transform .2s ease;
-    }
-    .modal-backdrop.active .modal-box { transform: scale(1); }
-    .modal-title { margin: 0 0 8px; font-size: 1.18rem; color: var(--navy); font-weight: 800; }
-    .modal-desc { margin: 0 0 20px; color: var(--muted); font-size: .9rem; line-height: 1.5; }
-    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
-
-    @media (max-width: 1100px) {
+    input:focus, select:focus, textarea:focus { border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(39,168,224,.15); outline: none; }
+    textarea { min-height: 100px; resize: vertical; }
+    .hint { font-size: 0.8rem; color: var(--muted); margin-top: 6px; line-height: 1.4; }
+    
+    .check-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .check-grid label { display: flex; align-items: center; gap: 8px; font-weight: 600; margin:0; cursor: pointer; }
+    .check-grid input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--blue); }
+    
+    .phase-block { background: #fdfdfd; border: 1px solid var(--line); border-radius: 12px; margin-bottom: 16px; overflow: hidden; width: 100%; box-sizing: border-box; }
+    .phase-header { background: #eaf7fd; padding: 12px 16px; font-weight: 800; color: var(--navy); font-size: 0.95rem; border-bottom: 1px solid var(--line); }
+    .module-list { list-style: none; padding: 0; margin: 0; width: 100%; box-sizing: border-box; }
+    .module-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid #f0f4f8; background: #fff; gap: 12px; transition: 0.2s; width: 100%; box-sizing: border-box; }
+    .module-item:last-child { border-bottom: none; }
+    .module-check { width: 20px; height: 20px; accent-color: var(--blue); flex-shrink: 0; }
+    .module-name { font-weight: 600; font-size: 0.9rem; flex: 1; transition: 0.2s; }
+    
+    .module-item.inactive { background: #f9fbfd; }
+    .module-item.inactive .module-name { color: var(--muted); text-decoration: line-through; opacity: 0.7; }
+    
+    .module-actions { display: flex; gap: 4px; flex-shrink: 0; }
+    .btn-move { background: var(--sky); border: none; color: var(--blue); width: 28px; height: 28px; border-radius: 6px; font-size: 0.8rem; font-weight: bold; display: grid; place-items: center; }
+    .btn-move:hover:not(:disabled) { background: var(--blue); color: #fff; }
+    .btn-move:disabled { opacity: 0.3; cursor: not-allowed; background: #eee; color: #999; }
+    
+    .preview-card { position: sticky; top: 88px; display: flex; flex-direction: column; max-height: calc(100vh - 96px); padding: 0; overflow: hidden; }
+    .preview-head { padding: 16px 24px; background: var(--navy); color: #fff; }
+    .preview-head h2 { margin: 0; font-size: 1.1rem; }
+    #promptOutput { flex: 1; border: none; border-radius: 0; padding: 24px; font-family: monospace; font-size: 0.85rem; line-height: 1.6; background: #fdfdfe; resize: none; overflow-y: auto; }
+    .preview-foot { padding: 16px 24px; background: #fff; border-top: 1px solid var(--line); display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-shrink: 0; }
+    
+    .btn { padding: 10px 18px; border-radius: 10px; font-weight: 700; border: none; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn-primary { background: var(--amber); color: var(--navy); box-shadow: 0 4px 12px rgba(244,185,66,.3); }
+    .btn-primary:hover { transform: translateY(-1px); background: #f0b028; }
+    .btn-secondary { background: var(--blue); color: #fff; }
+    .btn-secondary:hover { background: #1565a0; }
+    .btn-outline { background: transparent; border: 1px solid var(--muted); color: var(--ink); }
+    
+    .bottom-actions { position: sticky; bottom: 0; background: rgba(255,255,255,.98); padding: 16px 0; border-top: 2px solid var(--line); display: flex; gap: 16px; margin-top: 32px; z-index: 20; }
+    .conditional-box { background: #f5fbfe; border: 1px solid #cce4f1; border-radius: 12px; padding: 16px; margin-top: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    
+    fieldset { border: none; padding: 0; margin: 0; }
+    legend.legend-title { display: block; width: 100%; float: none; clear: both; font-weight: 700; font-size: 0.9rem; color: #284b63; margin-bottom: 8px; }
+    
+    @media (max-width: 1024px) {
       .workspace { grid-template-columns: 1fr; }
-      .preview-card { position: static; }
-      #promptOutput { height: 460px; }
-      .header-aside { align-items: flex-start; }
-    }
-    @media (max-width: 768px) {
-      .topbar { padding: 10px 16px; }
-      .brand-desc, .save-state span { display: none; }
-      .shell { padding: 18px 14px 92px; }
-      .intro { flex-direction: column; align-items: stretch; gap: 16px; }
-      .completion-card { width: 100%; }
-      .grid, .conditional, .check-grid { grid-template-columns: 1fr; }
-      .full, .conditional { grid-column: 1; }
-      .preset-bar { flex-direction: column; align-items: stretch; }
-      .preset-selector-group { width: 100%; }
-      .preset-select { flex: 1; }
-      .preview-foot { flex-direction: column; align-items: stretch; }
-      .preview-foot .btn { width: 100%; }
-      .mobile-generate { display: flex; }
+      .preview-card { position: static; height: 600px; max-height: none; }
+      .bottom-actions { flex-direction: column; }
+      .bottom-actions .btn { width: 100%; }
+      .conditional-box { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
 
 <header class="topbar">
-  <div class="brand">
-    <div class="brand-mark" aria-hidden="true">P+</div>
-    <div>
-      <div class="brand-name">PromptLab — Media Pembelajaran Interaktif</div>
-      <div class="brand-desc">Instructional Design Engine &amp; Arsitektur Prompt Media Edukatif</div>
-    </div>
-  </div>
-  <div class="save-state">
-    <div class="save-dot" id="saveDot" aria-hidden="true"></div>
-    <span id="saveText" role="status">Tersimpan di peramban</span>
-  </div>
+  <div class="brand">PromptLab v3 (Instructional Design)</div>
+  <div style="font-size: 0.85rem; color: #a5d2ef;">Generator Media Interaktif & PJJ</div>
 </header>
 
-<main class="shell">
-  <section class="intro">
-    <div>
-      <p class="eyebrow">Instructional Design Engine v3</p>
-      <h1>Dari tujuan belajar ke pengalaman nyata: bukan sekadar website cantik.</h1>
-      <p>Bangun prompt media pembelajaran interaktif berbasis 3 lapis: desain pedagogis mendalam, arsitektur interaksi terarah, dan spesifikasi kode bebas error.</p>
-    </div>
-    <div class="header-aside">
-      <div class="completion-card">
-        <div class="completion-row">
-          <span>Kesiapan Desain Belajar</span>
-          <span id="progressPercent">0%</span>
+<div class="workspace">
+  <form id="generatorForm">
+    
+    <!-- 1. PENGATURAN PLATFORM -->
+    <div class="card" style="margin-bottom: 24px;">
+      <h2 class="panel-title">1. Pengaturan Platform & Database</h2>
+      <div class="grid">
+        <div class="field">
+          <label for="platform">Platform Pembuatan AI</label>
+          <select id="platform" name="platform">
+            <option value="canva" selected>Canva Code</option>
+            <option value="gemini">Gemini Canvas</option>
+            <option value="other">AI Coding (Claude/ChatGPT)</option>
+          </select>
         </div>
-        <div class="progress-track" aria-hidden="true">
-          <div class="progress-fill" id="progressBar"></div>
+        <div class="field">
+          <label for="publish">Target Publikasi</label>
+          <select id="publish" name="publish">
+            <option value="canva_site" selected>Canva Site</option>
+            <option value="github">GitHub Pages</option>
+            <option value="gsites">Google Sites</option>
+            <option value="gas">Google Apps Script</option>
+          </select>
+        </div>
+        <div class="field full">
+          <label for="database">Penyimpanan Data Siswa (Nilai & Identitas)</label>
+          <select id="database" name="database">
+            <option value="canva_sheet" selected>Koneksikan ke Canva Sheet</option>
+            <option value="google_sheet">Koneksikan ke Google Spreadsheet via API</option>
+            <option value="no">Tidak perlu (Simpan lokal browser)</option>
+          </select>
+          <p class="hint">Jika dikoneksikan, halaman Cover akan meminta Nama & Kelas siswa otomatis.</p>
         </div>
       </div>
     </div>
-  </section>
 
-  <section class="preset-bar" aria-label="Manajemen Preset Draf">
-    <div class="preset-selector-group">
-      <label for="presetSelect" class="preset-label">
-        📁 Draf / Preset:
-      </label>
-      <select id="presetSelect" class="preset-select" aria-label="Pilih Preset"></select>
-      <button type="button" class="btn btn-secondary btn-sm" id="loadPresetBtn">Muat</button>
-      <button type="button" class="btn btn-primary btn-sm" id="savePresetBtn">💾 Simpan Draf</button>
-      <button type="button" class="btn btn-danger btn-sm" id="deletePresetBtn">Hapus</button>
-    </div>
-    <div class="preset-btns">
-      <button type="button" class="btn btn-secondary btn-sm" id="exportPresetsBtn" title="Ekspor semua preset ke JSON">⬇️ Ekspor JSON</button>
-      <button type="button" class="btn btn-secondary btn-sm" id="importPresetsBtn" title="Impor preset dari JSON">⬆️ Impor JSON</button>
-      <input type="file" id="importFileInput" accept=".json" hidden>
-    </div>
-  </section>
-
-  <div class="workspace">
-    <form id="generatorForm" class="card form-card" novalidate>
-      
-      <section class="panel">
-        <div class="panel-head">
-          <h2>1. Lingkungan media &amp; platform eksekusi</h2>
-          <p>Tentukan target eksekusi kode, metode deployment, serta cara penyimpanan data siswa.</p>
+    <!-- 2. KONTEKS PEMBELAJARAN -->
+    <div class="card" style="margin-bottom: 24px;">
+      <h2 class="panel-title">2. Konteks Pembelajaran & Sumber Materi</h2>
+      <div class="grid">
+        <div class="field"><label for="subject">Mata Pelajaran *</label><input type="text" id="subject" name="subject" value="IPAS" required></div>
+        <div class="field"><label for="topic">Topik / Materi Inti *</label><input type="text" id="topic" name="topic" required placeholder="Contoh: Energi Terbarukan"></div>
+        <div class="field">
+          <label for="level">Jenjang Sekolah</label>
+          <select id="level" name="level">
+            <option value="SD">SD</option>
+            <option value="SMP">SMP</option>
+            <option value="SMA">SMA</option>
+            <option value="SMK" selected>SMK</option>
+          </select>
         </div>
-        <div class="grid">
-          <div class="field">
-            <label for="platform">Tempat membuat / menjalankan media</label>
-            <select id="platform" name="platform">
-              <option value="gemini" selected>Gemini Canvas</option>
-              <option value="canva">Canva Code</option>
-              <option value="other">AI Coding (Claude / ChatGPT) → GitHub / Web</option>
-            </select>
-          </div>
+        <div class="field" id="vocationalField">
+          <label for="jurusan">Jurusan / Program Keahlian</label>
+          <input type="text" id="jurusan" name="jurusan" placeholder="Contoh: Agribisnis / TKJ">
+          <label for="contextualize" style="display:flex; align-items:center; gap:8px; margin-top:10px; font-weight:600; font-size:0.85rem; cursor:pointer;">
+            <input type="checkbox" id="contextualize" name="contextualize" checked style="width:16px; height:16px; accent-color:var(--blue);">
+            Kontekstualisasikan materi & contoh khusus untuk jurusan ini
+          </label>
+        </div>
+        <div class="field"><label for="classList">Daftar Pilihan Kelas (Dropdown)</label><input type="text" id="classList" name="classList" value="X-A, X-B, X-C"></div>
+        <div class="field"><label for="duration">Durasi Pembelajaran</label><input type="text" id="duration" name="duration" value="2 x 45 Menit"></div>
+        
+        <!-- SUMBER MATERI -->
+        <div class="field full" style="border-top: 1px dashed var(--line); padding-top: 16px; margin-top: 8px;">
+          <label for="sourceMode">Sumber Materi Acuan</label>
+          <select id="sourceMode" name="sourceMode">
+            <option value="ai">AI susun materi secara mandiri</option>
+            <option value="upload">Saya akan melampirkan / menempelkan dokumen materi</option>
+          </select>
           
-          <div class="field" id="publishField">
-            <label for="publish">Penyebaran / Publikasi</label>
-            <select id="publish" name="publish">
-              <option value="native">Di dalam platform yang dipilih</option>
-              <option value="github">GitHub Pages (Web Mandiri)</option>
-            </select>
-          </div>
-
-          <div class="field full">
-            <label for="connect">Penyimpanan hasil belajar &amp; respons siswa</label>
-            <select id="connect" name="connect">
-              <option value="local" selected>Simpan lokal peramban siswa (Offline-First / Privasi Aman)</option>
-              <option value="csv">Simpan lokal + fitur Ekspor Rangkuman (.CSV / Ringkasan PDF)</option>
-              <option value="sheets">Koneksikan ke Spreadsheet (Google Sheets / Canva Sheets)</option>
-            </select>
-            <p class="hint" id="connectHint">Data siswa tersimpan aman di browser masing-masing tanpa memerlukan login akun.</p>
-          </div>
-
-          <div class="field full" id="formatField" hidden>
-            <label for="format">Bentuk berkas web</label>
-            <select id="format" name="format">
-              <option value="single" selected>Satu berkas HTML utuh (Semua CSS &amp; JS inline — Rekomendasi)</option>
-              <option value="assets">index.html + folder rujukan assets/images/ &amp; assets/audio/</option>
-            </select>
-          </div>
-
-          <div class="field full">
-            <label for="networkOptimization">Kondisi akses jaringan siswa</label>
-            <select id="networkOptimization" name="networkOptimization">
-              <option value="low-bandwidth" selected>Ramah Jaringan Terbatas / Kuota Minim: Ringan (&lt;120KB), mandiri, siap simpan offline</option>
-              <option value="standard">Jaringan Normal / Wi-Fi Sekolah Stabil: Diizinkan CDN umum (Tailwind, Font Google)</option>
-            </select>
-          </div>
-        </div>
-      </section>
-
-      <section class="panel">
-        <div class="panel-head">
-          <h2>2. Siapa yang belajar &amp; konteks belajarnya?</h2>
-          <p>AI membutuhkan profil siswa agar analogi, studi kasus, dan bahasa media tepat sasaran.</p>
-        </div>
-        <div class="grid">
-          <div class="field">
-            <label for="subject" class="required">Mata pelajaran / Bidang studi</label>
-            <input id="subject" name="subject" type="text" placeholder="Misal: IPAS, Matematika, Kejuruan Otomotif" required>
-          </div>
-
-          <div class="field">
-            <label for="educationLevel" class="required">Jenjang pendidikan</label>
-            <select id="educationLevel" name="educationLevel" required>
-              <option value="SD">SD (Sekolah Dasar)</option>
-              <option value="SMP">SMP (Sekolah Menengah Pertama)</option>
-              <option value="SMA">SMA (Sekolah Menengah Atas)</option>
-              <option value="SMK" selected>SMK (Sekolah Menengah Kejuruan)</option>
-            </select>
-          </div>
-
-          <div class="field">
-            <label for="gradeDetail" class="required">Tingkat kelas / Fase</label>
-            <input id="gradeDetail" name="gradeDetail" type="text" placeholder="Misal: Kelas 10 / Fase E" value="Kelas 10 (Fase E)" required>
-          </div>
-
-          <div class="field">
-            <label for="classList">Daftar pilihan rombel / kelas (Menu Dropdown)</label>
-            <input id="classList" name="classList" type="text" placeholder="Misal: X-A, X-B, X-C atau X TKJ 1, X TKJ 2" value="X-A, X-B, X-C">
-            <p class="hint">Tuliskan dipisah koma. AI akan membuat menu dropdown (bukan ketik bebas) di cover media agar siswa memilih kelasnya dengan rapi.</p>
-          </div>
-
-          <div class="field" id="smkFieldWrapper">
-            <label for="vocationalField">Program keahlian / Jurusan SMK</label>
-            <select id="vocationalField" name="vocationalField">
-              <option value="Agribisnis & Agriteknologi" selected>Agribisnis, Perkebunan &amp; Pertanian</option>
-              <option value="Teknologi Informasi & Komputer">Teknologi Informasi &amp; Informatika</option>
-              <option value="Teknik Mesin & Otomotif">Teknik Mesin, Otomotif &amp; Pengelasan</option>
-              <option value="Bisnis, Manajemen & Akuntansi">Bisnis, Manajemen &amp; Akuntansi</option>
-              <option value="Pariwisata & Kuliner">Pariwisata, Perhotelan &amp; Kuliner</option>
-              <option value="Kesehatan & Farmasi">Kesehatan, Perawatan &amp; Farmasi</option>
-              <option value="Seni & Industri Kreatif">Seni, DKV &amp; Industri Kreatif</option>
-              <option value="Teknik Ketenagalistrikan & Elektronika">Teknik Elektronika &amp; Kelistrikan</option>
-            </select>
-            <p class="hint">Analogi materi dan studi kasus simulasi akan otomatis diselaraskan dengan jurusan ini.</p>
-          </div>
-
-          <div class="field">
-            <label for="initialKnowledge">Kemampuan awal siswa</label>
-            <select id="initialKnowledge" name="initialKnowledge">
-              <option value="Campuran" selected>Campuran / Beragam (Butuh jembatan konsep bertahap)</option>
-              <option value="Pemula">Pemula / Konsep Baru (Banyak analogi visual konkret)</option>
-              <option value="Cukup Mahir">Cukup Mahir (Siap studi kasus kontekstual)</option>
-            </select>
-          </div>
-
-          <div class="field">
-            <label for="learningMode">Moda pelaksanaan belajar</label>
-            <select id="learningMode" name="learningMode">
-              <option value="PJJ Mandiri (Asinkron)" selected>PJJ / Belajar Mandiri di Rumah (Instruksi swa-bimbing)</option>
-              <option value="Tatap Muka di Kelas">Tatap Muka di Kelas (Interaktif bersama bimbingan guru)</option>
-              <option value="Blended Learning">Blended Learning (Sebagian mandiri, didiskusikan di kelas)</option>
-              <option value="Praktikum / Eksplorasi Laboratorium">Praktikum / Eksplorasi Terpandu</option>
-            </select>
-          </div>
-
-          <div class="field">
-            <label for="studentDevice">Perangkat dominan siswa</label>
-            <select id="studentDevice" name="studentDevice">
-              <option value="Ponsel Cerdas (HP layar 5–6.5 inci)" selected>Ponsel Cerdas (Layar sentuh, tombol besar minimal 44px)</option>
-              <option value="Laptop / Komputer Sekolah">Laptop / Komputer Sekolah (Keyboard &amp; mouse)</option>
-              <option value="Campuran (Ponsel & Komputer)">Campuran (Desain harus fully responsive multi-perangkat)</option>
-            </select>
-          </div>
-        </div>
-      </section>
-
-      <section class="panel">
-        <div class="panel-head">
-          <h2>3. Apa yang harus dikuasai &amp; miskonsepsi apa yang diuji?</h2>
-          <p>Tujuan pembelajaran yang presisi mencegah AI membuat materi yang sekadar hafalan dangkal.</p>
-        </div>
-        <div class="grid">
-          <div class="field full">
-            <label for="topic" class="required">Topik / Materi utama</label>
-            <input id="topic" name="topic" type="text" placeholder="Misal: Efisiensi Energi &amp; Konservasi Daya pada Sistem Pompa Air Gambut" required>
-          </div>
-
-          <div class="field full">
-            <label for="tpMode">Cara perumusan Tujuan Pembelajaran (TP)</label>
-            <select id="tpMode" name="tpMode">
-              <option value="ai" selected>AI rumuskan TP operasional terukur otomatis</option>
-              <option value="custom">Saya rumuskan TP sendiri (Spesifik)</option>
-            </select>
-          </div>
-
-          <div id="customTpWrapper" class="field full" hidden>
-            <label for="customTP" class="required">Rumusan Tujuan Pembelajaran Anda</label>
-            <textarea id="customTP" name="customTP" placeholder="Contoh: Peserta didik mampu menganalisis hubungan debit air dengan daya listrik pompa dan merekomendasikan efisiensi energi yang optimal."></textarea>
-            <p class="hint">Tuliskan tujuan pembelajaran spesifik yang ingin dicapai siswa melalui media ini.</p>
-          </div>
-
-          <fieldset class="fieldset-reset full">
-            <legend class="legend-title required">Level kognitif yang dilatih (Centang Taksonomi Bloom yang relevan)</legend>
-            <div class="check-grid">
-              <label class="check-line"><input type="checkbox" name="cognitiveLevels" value="C1 (Mengingat)"> C1 - Mengingat (Fakta &amp; istilah inti)</label>
-              <label class="check-line"><input type="checkbox" name="cognitiveLevels" value="C2 (Memahami)" checked> C2 - Memahami (Penjelasan konsep &amp; analogi)</label>
-              <label class="check-line"><input type="checkbox" name="cognitiveLevels" value="C3 (Menerapkan)" checked> C3 - Menerapkan (Aplikasi dalam situasi nyata)</label>
-              <label class="check-line"><input type="checkbox" name="cognitiveLevels" value="C4 (Menganalisis)" checked> C4 - Menganalisis (Sebab-akibat &amp; data)</label>
-              <label class="check-line"><input type="checkbox" name="cognitiveLevels" value="C5 (Mengevaluasi)"> C5 - Mengevaluasi (Menilai solusi &amp; justifikasi)</label>
-              <label class="check-line"><input type="checkbox" name="cognitiveLevels" value="C6 (Mencipta)"> C6 - Mencipta (Merancang solusi/karya baru)</label>
-            </div>
-            <p class="hint">Pilih level berpikir yang ingin dicapai agar kedalaman kuis dan simulasi tidak sekadar hafalan.</p>
-          </fieldset>
-
-          <!-- Miskonsepsi Siswa -->
-          <div class="field full">
-            <label for="misconceptions">Miskonsepsi umum siswa yang wajib diuji / diluruskan (Opsional)</label>
-            <textarea id="misconceptions" name="misconceptions" placeholder="Contoh: Siswa sering mengira energi bisa habis atau hilang (padahal berubah bentuk), atau pompa yang lebih besar selalu lebih efisien."></textarea>
-            <p class="hint">💡 Kosongkan bila ingin AI mengidentifikasi 2–3 miskonsepsi paling sering terjadi pada materi ini secara otomatis.</p>
-          </div>
-
-          <!-- Sumber Materi -->
-          <div class="field full">
-            <label for="sourceMode">Sumber acuan materi ajar</label>
-            <select id="sourceMode" name="sourceMode">
-              <option value="ai" selected>AI menyusun mandiri dari konsep ilmiah baku &amp; kontekstual</option>
-              <option value="upload">Saya melampirkan modul / teks sendiri (Unggah langsung di chat AI)</option>
-            </select>
-          </div>
-
-          <div id="sourceFields" class="conditional full" hidden>
+          <div class="conditional-box" id="sourceFields" style="display:none;">
             <div class="field">
-              <label for="sourceType">Format dokumen lampiran</label>
+              <label for="sourceType">Format Dokumen Acuan</label>
               <select id="sourceType" name="sourceType">
-                <option value="PDF (Modul / BSE)">PDF (Modul / Buku Guru-Siswa)</option>
-                <option value="Slide Presentasi">Slide PPT / PPTX</option>
-                <option value="Teks Rangkuman Materi">Teks Rangkuman Guru</option>
+                <option value="PDF">PDF</option>
+                <option value="Word (.docx)">Word (.docx)</option>
+                <option value="PowerPoint (PPT/PPTX)">PowerPoint (PPT/PPTX)</option>
+                <option value="Teks Materi">Teks Materi</option>
               </select>
             </div>
             <div class="field">
-              <label for="sourceTreatment">Pedoman pengolahan bahan</label>
+              <label for="sourceTreatment">Tindakan AI terhadap Sumber</label>
               <select id="sourceTreatment" name="sourceTreatment">
-                <option value="Jadikan acuan mutlak. Jangan menambah materi di luar dokumen." selected>Jadikan acuan mutlak</option>
-                <option value="Gunakan acuan utama, lengkapi dengan contoh & analogi kontekstual.">Boleh diperkaya AI</option>
-                <option value="Ambil hanya intisari esensial yang mendukung TP.">Hanya bagian inti saja</option>
+                <option value="Jadikan acuan utama yang ketat, jangan tambah konsep luar.">Gunakan sebagai acuan ketat</option>
+                <option value="Gunakan sebagai acuan dasar, dan boleh ditambah contoh relevan.">Gunakan acuan & lengkapi dengan contoh</option>
               </select>
             </div>
           </div>
         </div>
-      </section>
 
-      <section class="panel">
-        <div class="panel-head">
-          <h2>4. Alur pengalaman belajar &amp; interaksi</h2>
-          <p>Rancang alur pedagogis <em>Memahami → Mengaplikasi → Merefleksi</em> dengan modul interaktif yang dapat diatur urutannya.</p>
+        <div class="field full">
+          <label for="tpMode">Tujuan Pembelajaran</label>
+          <select id="tpMode" name="tpMode">
+            <option value="ai">AI susun otomatis (KKO + Objek + Kriteria)</option>
+            <option value="custom">Saya rumuskan TP sendiri (Spesifik)</option>
+          </select>
+          <textarea id="tpCustom" name="tpCustom" style="display:none; margin-top:10px;" placeholder="Tuliskan rumusan TP di sini..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. STRUKTUR & ALUR MPI -->
+    <div class="card" style="margin-bottom: 24px;">
+      <h2 class="panel-title">3. Alur Pengalaman Belajar (Instructional Flow)</h2>
+      <p class="hint" style="margin-bottom:16px;">Centang modul yang dipakai, dan atur urutan menggunakan panah (Terkunci di fasenya masing-masing).</p>
+      
+      <fieldset>
+        <!-- FASE 1: AWAL -->
+        <div class="phase-block">
+          <div class="phase-header">Struktur Inti MPI (Terkunci & Wajib)</div>
+          <ul class="module-list">
+            <li class="module-item"><input type="checkbox" class="module-check" checked disabled><span class="module-name">📄 Halaman Cover & Identitas</span></li>
+            <li class="module-item"><input type="checkbox" class="module-check" checked disabled><span class="module-name">🎯 Petunjuk Penggunaan & TP</span></li>
+            <li class="module-item"><input type="checkbox" class="module-check" checked disabled><span class="module-name">🏠 Menu Utama (Dashboard)</span></li>
+          </ul>
         </div>
 
-        <div class="field full" style="margin-bottom:14px;">
-          <div class="badge-soft" style="margin-bottom:6px;">Prinsip Pembelajaran Mendalam</div>
-          <p class="hint" style="margin:0;">Media akan mengalir dari <strong>Memahami</strong> (pemantik &amp; penemuan konsep), <strong>Mengaplikasi</strong> (simulasi/studi kasus kontekstual), hingga <strong>Merefleksi</strong> (evaluasi diri metakognitif).</p>
+        <!-- FASE 2: MEMAHAMI -->
+        <div class="phase-block">
+          <div class="phase-header">Fase 1: Memahami (Membangun Konsep)</div>
+          <ul class="module-list" id="listMemahami">
+            <li class="module-item"><input type="checkbox" class="module-check" checked><span class="module-name">Apersepsi / Pemantik</span><div class="module-actions"><button type="button" class="btn-move up">▲</button><button type="button" class="btn-move down">▼</button></div></li>
+            <li class="module-item"><input type="checkbox" class="module-check" checked><span class="module-name">Eksplorasi Materi Inti (Chunking)</span><div class="module-actions"><button type="button" class="btn-move up">▲</button><button type="button" class="btn-move down">▼</button></div></li>
+            <li class="module-item"><input type="checkbox" class="module-check" checked><span class="module-name">Contoh Kontekstual</span><div class="module-actions"><button type="button" class="btn-move up">▲</button><button type="button" class="btn-move down">▼</button></div></li>
+            <li class="module-item"><input type="checkbox" class="module-check" checked><span class="module-name">Infografis / Visual Konsep</span><div class="module-actions"><button type="button" class="btn-move up">▲</button><button type="button" class="btn-move down">▼</button></div></li>
+            <li class="module-item"><input type="checkbox" class="module-check" checked><span class="module-name">Cek Pemahaman Mikro</span><div class="module-actions"><button type="button" class="btn-move up">▲</button><button type="button" class="btn-move down">▼</button></div></li>
+          </ul>
         </div>
 
-        <fieldset class="fieldset-reset full">
-          <legend class="legend-title">Modul pembelajaran (Gunakan panah untuk mengatur alur kemunculan)</legend>
-          <div class="module-list" id="moduleContainer">
-            <!-- Rendered by JS -->
+        <!-- FASE 3: MENGAPLIKASI -->
+        <div class="phase-block">
+          <div class="phase-header">Fase 2: Mengaplikasi (Aktivitas & Interaksi)</div>
+          <ul class="module-list" id="listMengaplikasi">
+            <li class="module-item"><input type="checkbox" class="module-check" checked><span class="module-name">Latihan Interaktif</span><div class="module-actions"><button type="button" class="btn-move up">▲</button><button type="button" class="btn-move down">▼</button></div></li>
+            <li class="module-item"><input type="checkbox" class="module-check" checked><span class="module-name">Studi Kasus Kontekstual</span><div class="module-actions"><button type="button" class="btn-move up">▲</button><button type="button" class="btn-move down">▼</button></div></li>
+            <li class="module-item"><input type="checkbox" class="module-check" checked><span class="module-name">Simulasi Interaktif</span><div class="module-actions"><button type="button" class="btn-move up">▲</button><button type="button" class="btn-move down">▼</button></div></li>
+            <li class="module-item" data-key="task"><input type="checkbox" class="module-check" checked><span class="module-name">Aktivitas Penyelidikan Mandiri / LKPD</span><div class="module-actions"><button type="button" class="btn-move up">▲</button><button type="button" class="btn-move down">▼</button></div></li>
+            <li class="module-item" data-key="game"><input type="checkbox" class="module-check" checked><span class="module-name">Game Edukatif</span><div class="module-actions"><button type="button" class="btn-move up">▲</button><button type="button" class="btn-move down">▼</button></div></li>
+          </ul>
+        </div>
+
+        <!-- FASE 4: MEREFLEKSI -->
+        <div class="phase-block">
+          <div class="phase-header">Fase 3: Merefleksi (Penilaian & Penarikan Makna)</div>
+          <ul class="module-list" id="listMerefleksi">
+            <li class="module-item"><input type="checkbox" class="module-check" checked><span class="module-name">Rangkuman Terstruktur</span><div class="module-actions"><button type="button" class="btn-move up">▲</button><button type="button" class="btn-move down">▼</button></div></li>
+            <li class="module-item"><input type="checkbox" class="module-check" checked><span class="module-name">Kuis Akhir Komprehensif</span><div class="module-actions"><button type="button" class="btn-move up">▲</button><button type="button" class="btn-move down">▼</button></div></li>
+            <li class="module-item"><input type="checkbox" class="module-check" checked><span class="module-name">Refleksi Siswa / Exit Ticket</span><div class="module-actions"><button type="button" class="btn-move up">▲</button><button type="button" class="btn-move down">▼</button></div></li>
+          </ul>
+        </div>
+      </fieldset>
+    </div>
+
+    <!-- 4. PENGATURAN AKTIVITAS & EVALUASI -->
+    <div class="card" style="margin-bottom: 24px;">
+      <h2 class="panel-title">4. Pengaturan Aktivitas & Asesmen</h2>
+      
+      <!-- Penyelidikan Mandiri -->
+      <div class="grid" style="border-bottom: 1px dashed var(--line); padding-bottom: 16px;">
+        <div class="field full">
+          <label for="taskMode">Model Aktivitas Penyelidikan Mandiri / LKPD</label>
+          <select id="taskMode" name="taskMode">
+            <option value="AI susun otomatis sesuai materi dan jurusan siswa">AI susun otomatis sesuai materi dan jurusan siswa</option>
+            <option value="Observasi alat / lingkungan nyata sekitar rumah">Observasi alat / lingkungan nyata sekitar rumah</option>
+            <option value="Eksperimen sederhana alat rumah/dapur">Eksperimen sederhana alat rumah/dapur</option>
+            <option value="Analisis kasus lingkungan / kejuruan lokal">Analisis kasus lingkungan / kejuruan lokal</option>
+            <option value="custom">Tentukan instruksi tugas sendiri...</option>
+          </select>
+          <textarea id="taskCustom" name="taskCustom" style="display:none; margin-top:10px;" placeholder="Tuliskan instruksi langkah kerja tugas mandiri di sini..."></textarea>
+        </div>
+      </div>
+
+      <!-- Game Edukatif -->
+      <div class="grid" style="border-bottom: 1px dashed var(--line); padding-bottom: 16px; margin-top: 16px;">
+        <div class="field full">
+          <label for="gameType">Jenis Game Edukatif</label>
+          <select id="gameType" name="gameType">
+            <option value="Game pesawat penembak meteor / jawaban salah">Game pesawat penembak meteor / jawaban salah</option>
+            <option value="Game pecah balon jawaban benar">Game pecah balon jawaban benar</option>
+            <option value="Game susun blok/kata">Game susun blok/kata</option>
+            <option value="AI pilihkan mekanika game yang cocok dengan materi">AI pilihkan mekanika yang cocok dengan materi</option>
+            <option value="custom">Tentukan mekanika game sendiri...</option>
+          </select>
+          <textarea id="gameCustom" name="gameCustom" style="display:none; margin-top:10px;" placeholder="Jelaskan aturan dan mekanika game di sini..."></textarea>
+          <p class="hint">Catatan: Jika database aktif dan tercentang, skor game akan otomatis dikirim ke tabel Leaderboard.</p>
+        </div>
+      </div>
+
+      <!-- Asesmen Kuis -->
+      <div class="grid" style="margin-top: 16px; margin-bottom: 0;">
+        <div class="field"><label for="subCount">Jumlah soal formatif tiap submateri</label><input type="number" id="subCount" name="subCount" value="3" min="1" max="50"></div>
+        <div class="field"><label for="finalCount">Jumlah soal kuis akhir komprehensif</label><input type="number" id="finalCount" name="finalCount" value="10" min="1" max="50"></div>
+        <div class="field full">
+          <label for="blueprint">Distribusi Kognitif Soal (Blueprint Asesmen)</label>
+          <select id="blueprint" name="blueprint">
+            <option value="Seimbang: 30% Pemahaman Konsep (C2), 40% Penerapan Kasus (C3), 30% Analisis/HOTS (C4-C5)">Seimbang: 30% Pemahaman Konsep (C2), 40% Penerapan Kasus (C3), 30% Analisis/HOTS (C4-C5)</option>
+            <option value="Dominan Penerapan: 20% C2, 60% C3, 20% C4">Dominan Penerapan: 20% C2, 60% C3, 20% C4</option>
+            <option value="Dominan HOTS: 20% C2, 30% C3, 50% HOTS">Dominan HOTS: 20% C2, 30% C3, 50% HOTS</option>
+          </select>
+        </div>
+        <fieldset class="field full">
+          <legend class="legend-title">Bentuk variasi interaksi soal (Pilih yang diizinkan)</legend>
+          <div class="check-grid">
+            <label><input type="checkbox" name="qType" value="Pilihan ganda kontekstual" checked> Pilihan ganda kontekstual</label>
+            <label><input type="checkbox" name="qType" value="Mengurutkan proses" checked> Mengurutkan proses</label>
+            <label><input type="checkbox" name="qType" value="Drag & drop klasifikasi" checked> Drag & drop klasifikasi</label>
+            <label><input type="checkbox" name="qType" value="Menjodohkan konsep" checked> Menjodohkan konsep</label>
+            <label><input type="checkbox" name="qType" value="Benar / salah disertai alasan" checked> Benar / salah disertai alasan</label>
           </div>
+          <p class="hint" style="margin-top:10px;">💡 Setiap butir soal harus memiliki metadata internal (TP, level kognitif, kunci, & umpan balik yang menjelaskan mengapa jawaban tepat).</p>
         </fieldset>
-
-        <div class="grid" style="margin-top:20px">
-          <!-- Simulasi Options -->
-          <div id="simFields" class="conditional" hidden>
-            <div class="field full">
-              <span class="label">Aturan Khusus Simulasi Interaktif</span>
-              <p class="hint" style="margin:0 0 8px;">Simulasi harus memiliki: (1) Kondisi awal yang jelas, (2) Kontrol variabel independen nyata (slider/toggle), (3) Indikator hasil sebab-akibat teramati, dan (4) Pertanyaan reflektif interpretasi data siswa.</p>
-              <label class="check-line">
-                <input type="checkbox" id="simStrictFormula" name="simStrictFormula" checked>
-                <span>Hanya gunakan hubungan variabel ilmiah yang valid (Dilarang mengarang rumus matematis fiktif)</span>
-              </label>
-            </div>
-          </div>
-
-          <!-- Game Options -->
-          <div id="gameFields" class="conditional" hidden>
-            <div class="field full">
-              <span class="label">Justifikasi Game Edukatif</span>
-              <p class="hint" style="margin:0;">Mekanisme permainan hanya digunakan jika memperkuat pemahaman TP (bukan sekadar gimik). Contoh: klasifikasi komponen via drag-and-drop, tebak kasus berbatas waktu santai, atau pencarian pola.</p>
-            </div>
-          </div>
-
-          <!-- Diferensiasi Kesiapan Belajar -->
-          <div class="field full">
-            <label for="differentiation">Diferensiasi kesiapan belajar siswa</label>
-            <select id="differentiation" name="differentiation">
-              <option value="none">Satu jalur standar terpandu untuk semua siswa</option>
-              <option value="readiness" selected>Tiga Tingkat Kesiapan (Perlu Bimbingan, Cukup Mahir, Mahir — TP tetap sama)</option>
-            </select>
-            <p class="hint">Siswa berkesempatan memilih tingkat bantuan: Perlu Bimbingan mendapat kartu petunjuk tambahan, sedangkan Mahir mendapat tantangan transfer kasus.</p>
-          </div>
-
-          <!-- Teacher Preview / Mode Guru -->
-          <div class="field full">
-            <label class="check-line">
-              <input type="checkbox" id="teacherModeToggle" name="teacherModeToggle" checked>
-              <span><strong>Sediakan Mode Guru (Teacher Preview):</strong> Tab rahasia atau tombol pengalih khusus guru untuk melihat kunci jawaban, rubrik penilaian, dan analisis miskonsepsi secara transparan.</span>
-            </label>
-          </div>
-
-          <!-- Kuis & Evaluasi Details -->
-          <div id="quizFields" class="conditional">
-            <div class="field" id="subCountField">
-              <label for="subCount">Jumlah soal formatif tiap submateri</label>
-              <input id="subCount" name="subCount" type="number" value="3" min="1" max="10">
-            </div>
-            <div class="field" id="finalCountField">
-              <label for="finalCount">Jumlah soal kuis akhir komprehensif</label>
-              <input id="finalCount" name="finalCount" type="number" value="10" min="1" max="30">
-            </div>
-
-            <div class="field full">
-              <label for="bloomProportion">Distribusi Kognitif Soal (Blueprint Asesmen)</label>
-              <select id="bloomProportion" name="bloomProportion">
-                <option value="balanced" selected>Seimbang: 30% Pemahaman Konsep (C2), 40% Penerapan Kasus (C3), 30% Analisis/HOTS (C4)</option>
-                <option value="foundation">Fondasi: 60% Pemahaman Dasar (C2), 40% Penerapan Terbimbing (C3)</option>
-                <option value="hots">Tingkat Tinggi (HOTS): 20% Pemahaman, 50% Analisis Kasus Riil, 30% Evaluasi/Pemecahan Masalah</option>
-              </select>
-            </div>
-
-            <fieldset class="fieldset-reset full">
-              <legend class="legend-title">Bentuk variasi interaksi soal</legend>
-              <div class="check-grid">
-                <label class="check-line"><input type="checkbox" name="questions" value="Pilihan ganda kontekstual (studi kasus)" checked> Pilihan ganda kontekstual</label>
-                <label class="check-line"><input type="checkbox" name="questions" value="Mengurutkan tahapan proses" checked> Mengurutkan proses</label>
-                <label class="check-line"><input type="checkbox" name="questions" value="Drag & drop klasifikasi kategori"> Drag &amp; drop klasifikasi</label>
-                <label class="check-line"><input type="checkbox" name="questions" value="Menghubungkan pasangan konsep"> Menjodohkan konsep</label>
-                <label class="check-line"><input type="checkbox" name="questions" value="Benar / salah analitis dengan alasan"> Benar / salah disertai alasan</label>
-              </div>
-            </fieldset>
-            <p class="hint full">💡 Setiap butir soal harus memiliki <em>metadata internal</em> (TP yang diukur, level kognitif, kunci, dan umpan balik edukatif yang menjelaskan <em>mengapa</em> jawaban tersebut tepat).</p>
-          </div>
-
-          <!-- Task Details -->
-          <div id="taskFields" class="conditional" hidden>
-            <div class="field full">
-              <label for="taskMode">Model aktivitas penyelidikan mandiri</label>
-              <select id="taskMode" name="taskMode">
-                <option value="auto">AI susun otomatis sesuai materi dan jurusan siswa</option>
-                <option value="Observasi lingkungan / alat sekitar">Observasi alat / lingkungan nyata sekitar rumah</option>
-                <option value="Eksperimen alat rumah tangga sederhana">Eksperimen sederhana alat rumah/dapur</option>
-                <option value="Studi kasus pemecahan masalah lokal">Analisis kasus lingkungan / kejuruan lokal</option>
-                <option value="custom">Tentukan instruksi tugas sendiri...</option>
-              </select>
-            </div>
-            <div id="customTask" class="full" hidden>
-              <div class="field full">
-                <label for="task">Instruksi tugas mandiri</label>
-                <textarea id="task" name="task" placeholder="Tuliskan aktivitas nyata, langkah pengerjaan, dan kriteria keberhasilan..."></textarea>
-              </div>
-            </div>
-          </div>
-
-          <!-- Evidence Details -->
-          <div id="evidenceFields" class="conditional" hidden>
-            <fieldset class="fieldset-reset full">
-              <legend class="legend-title">Format bukti belajar yang dikumpulkan</legend>
-              <div class="check-grid">
-                <label class="check-line"><input type="checkbox" name="evidence" value="Cetak / Unduh PDF Rangkuman Hasil Belajar (Print-Friendly)" checked> Cetak / PDF hasil belajar</label>
-                <label class="check-line"><input type="checkbox" name="evidence" value="Catatan ringkasan di buku tulis siswa"> Catatan tangan di buku siswa</label>
-                <label class="check-line"><input type="checkbox" name="evidence" value="Foto dokumentasi hasil eksperimen mandiri"> Foto dokumentasi kerja</label>
-                <label class="check-line"><input type="checkbox" name="evidence" value="Video / Audio singkat refleksi pemikiran siswa"> Video / audio refleksi</label>
-              </div>
-            </fieldset>
-          </div>
-        </div>
-      </section>
-
-      <section class="panel">
-        <div class="panel-head">
-          <h2>5. Tampilan, aksesibilitas inklusif &amp; catatan khusus</h2>
-          <p>Pastikan media nyaman dibaca di layar HP, kontras memenuhi standar WCAG, dan mengakomodasi konteks daerah.</p>
-        </div>
-        <div class="grid">
-          <div class="field">
-            <label for="images">Ilustrasi &amp; grafis</label>
-            <select id="images" name="images">
-              <option value="auto" selected>SVG Inline mandiri buatan AI (Ringan, tajam di HP, tanpa URL eksternal)</option>
-              <option value="own">Akan disiapkan / diunggah sendiri oleh guru</option>
-            </select>
-          </div>
-
-          <div class="field">
-            <label for="audio">Musik latar &amp; efek suara</label>
-            <select id="audio" name="audio">
-              <option value="none" selected>Tanpa suara (Hening, hemat kuota &amp; baterai)</option>
-              <option value="auto">Web Audio API sintetis (Ringan, tombol Mute wajib)</option>
-              <option value="own">Akan disiapkan sendiri oleh guru</option>
-            </select>
-          </div>
-
-          <div class="field full">
-            <label for="style">Tema antarmuka visual</label>
-            <select id="style" name="style">
-              <option value="Bersih, modern, tipografi jelas dan kontras tinggi (WCAG AA)" selected>Bersih &amp; modern (Kontras tinggi, nyaman di mata)</option>
-              <option value="Ceria, penuh warna ramah peserta didik">Ceria &amp; ramah peserta didik (SD / SMP)</option>
-              <option value="Profesional, teknis dan presisi vokasi">Profesional &amp; presisi vokasi (SMA / SMK)</option>
-              <option value="Papan tulis edukatif interaktif">Papan tulis interaktif</option>
-            </select>
-          </div>
-
-          <div class="field full">
-            <label for="customNotes">Catatan instruksi khusus guru (Konteks lokal / daerah)</label>
-            <textarea id="customNotes" name="customNotes" placeholder="Contoh: Hubungkan materi dengan studi kasus lahan pasang surut / sawit di Kalimantan Tengah. Siswa mengakses dari ponsel 5 inci. Gunakan istilah bahasa Indonesia baku sebelum istilah teknis asing."></textarea>
-            <p class="hint">Catatan ini dimasukkan sebagai instruksi prioritas tinggi di dalam prompt.</p>
-          </div>
-        </div>
-      </section>
-
-      <div class="panel-actions">
-        <button type="button" class="btn btn-secondary" id="resetBtn">🔄 Reset Formulir</button>
-        <button type="submit" class="btn btn-accent" id="submitBtn">⚡ Buat Prompt Pembelajaran</button>
       </div>
-    </form>
-
-    <aside class="card preview-card" aria-label="Hasil prompt terstruktur">
-      <div class="preview-head">
-        <div>
-          <h2>Prompt Pembelajaran Anda</h2>
-          <div id="previewMeta" class="preview-meta">Lengkapi materi inti untuk memulai</div>
+    </div>
+    
+    <!-- 5. MEDIA VISUAL & AUDIO -->
+    <div class="card" style="margin-bottom: 24px;">
+      <h2 class="panel-title">5. Tampilan Visual & Audio</h2>
+      <div class="grid" style="margin-bottom: 0;">
+        <div class="field">
+          <label for="mediaImages">Ilustrasi / Gambar</label>
+          <select id="mediaImages" name="mediaImages">
+            <option value="Foto Unsplash (Wajib ada fallback SVG jika gagal muat)">Foto Unsplash (+ Fallback SVG otomatis)</option>
+            <option value="Murni SVG Vektor / Ikon Inline">Hanya SVG Inline / Vektor Murni</option>
+          </select>
         </div>
-        <div id="statusBadge" class="badge-status">Belum dibuat</div>
-      </div>
-
-      <div class="output-wrapper">
-        <div id="editIndicator" class="edit-indicator">✏️ Diubah secara manual</div>
-        <textarea id="promptOutput" aria-label="Hasil prompt terstruktur" placeholder="Prompt berstandar Instructional Design 3-Lapis akan dirangkai di sini..."></textarea>
-      </div>
-
-      <div class="preview-foot">
-        <div class="stats-container">
-          <span class="stats-text" id="statsText">0 karakter | 0 kata</span>
-          <span class="stats-pill" id="tokenPill" title="Estimasi token AI">~0 token</span>
+        <div class="field">
+          <label for="mediaAudio">Efek Suara (Audio)</label>
+          <select id="mediaAudio" name="mediaAudio">
+            <option value="Gunakan Web Audio API (Osilator murni) untuk suara interaksi.">Web Audio API Sintetis (Pasti Bunyi)</option>
+            <option value="Tanpa efek suara sama sekali.">Tanpa Suara</option>
+          </select>
         </div>
-        <div style="display:flex; gap:8px; flex-wrap:wrap;">
-          <button type="button" class="btn btn-primary btn-sm" id="copyBtn">📋 Salin Prompt</button>
-          <button type="button" class="btn btn-secondary btn-sm" id="downloadBtn">💾 Unduh TXT</button>
+        <div class="field full">
+          <label for="mediaStyle">Gaya Tampilan (UI Style)</label>
+          <select id="mediaStyle" name="mediaStyle">
+            <option value="Profesional, modern, bersih">Profesional, Modern & Bersih</option>
+            <option value="Ceria, berwarna, ramah anak">Ceria & Berwarna</option>
+            <option value="Gaya papan tulis (chalkboard)">Papan Tulis (Chalkboard)</option>
+            <option value="AI sesuaikan dengan tingkat usia">AI Sesuaikan dengan usia siswa</option>
+          </select>
         </div>
       </div>
-      <p class="hint" style="padding: 0 18px 14px; margin: 0;">
-        💡 Salin prompt ini ke <strong>Gemini Canvas, Canva Code, atau Claude/ChatGPT</strong>. Kode aplikasi lengkap yang teruji secara pedagogis akan dibuat langsung.
-      </p>
-    </aside>
-  </div>
-</main>
-
-<!-- Floating Mobile Submit Button -->
-<div class="mobile-generate">
-  <button type="button" class="btn btn-accent" id="mobileGenerateBtn">⚡ Buat Prompt Pembelajaran</button>
-</div>
-
-<!-- Modal 1: Reset Form Confirmation -->
-<div id="resetModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="resetModalTitle">
-  <div class="modal-box">
-    <h3 id="resetModalTitle" class="modal-title">Reset Isian Formulir?</h3>
-    <p class="modal-desc">Semua isian formulir dan prompt yang sedang aktif akan dikosongkan. Draf yang telah disimpan di daftar preset Anda tetap aman.</p>
-    <div class="modal-actions">
-      <button type="button" class="btn btn-secondary" id="cancelResetBtn">Batal</button>
-      <button type="button" class="btn btn-danger" id="confirmResetBtn">Ya, Bersihkan</button>
     </div>
-  </div>
-</div>
 
-<!-- Modal 2: Overwrite Warning -->
-<div id="overwriteModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="overwriteModalTitle">
-  <div class="modal-box">
-    <h3 id="overwriteModalTitle" class="modal-title">Perbarui Prompt yang Diubah?</h3>
-    <p class="modal-desc">Anda telah mengedit teks prompt secara manual di kotak hasil. Jika Anda membuat ulang prompt sekarang, teks editan manual Anda akan digantikan oleh hasil generator.</p>
-    <div class="modal-actions">
-      <button type="button" class="btn btn-secondary" id="cancelOverwriteBtn">Batal</button>
-      <button type="button" class="btn btn-accent" id="confirmOverwriteBtn">Ya, Timpa Ulang</button>
+    <!-- 6. MODE GURU & KEAMANAN -->
+    <div class="card">
+      <h2 class="panel-title">6. Mode Guru (Teacher View)</h2>
+      <p class="hint" style="margin-bottom:16px;">Mode ini menambahkan ikon 👨‍🏫 di halaman cover untuk membuka kunci jawaban, rubrik, dan metadata.</p>
+      <div class="grid" style="margin-bottom: 0;">
+        <div class="field">
+          <label for="teacherMode">Status Mode Guru</label>
+          <select id="teacherMode" name="teacherMode"><option value="yes">Aktifkan</option><option value="no">Nonaktifkan</option></select>
+        </div>
+        <div class="field">
+          <label for="teacherPass">Password / PIN Akses</label>
+          <input type="text" id="teacherPass" name="teacherPass" value="123456">
+        </div>
+        <p class="hint full" style="color:var(--danger)">Peringatan: Pada HTML statis (tanpa backend kuat), password ini hanya berfungsi sebagai pengunci antarmuka (UI locker) untuk mencegah siswa melihat jawaban secara tidak sengaja, bukan sistem keamanan enkripsi data tingkat tinggi.</p>
+      </div>
     </div>
-  </div>
-</div>
 
-<!-- Modal 3: Save Preset -->
-<div id="savePresetModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="savePresetModalTitle">
-  <div class="modal-box">
-    <h3 id="savePresetModalTitle" class="modal-title">Simpan Draf / Preset Desain</h3>
-    <p class="modal-desc">Beri nama draf desain pembelajaran ini agar dapat dimuat kembali untuk kelas atau topik lainnya.</p>
-    <div style="margin-bottom:18px;">
-      <label for="newPresetNameInput" class="label">Nama Preset</label>
-      <input type="text" id="newPresetNameInput" placeholder="Misal: IPAS Kelas 10 - Pompa Air Gambut">
+    <div class="bottom-actions">
+      <button type="submit" class="btn btn-primary" style="flex:1; justify-content:center; font-size:1.1rem;">⚡ Bangun Prompt ID 3-Lapis</button>
+      <button type="button" class="btn btn-outline" id="btnReset">Reset Formulir</button>
     </div>
-    <div class="modal-actions">
-      <button type="button" class="btn btn-secondary" id="cancelSavePresetBtn">Batal</button>
-      <button type="button" class="btn btn-primary" id="confirmSavePresetBtn">Simpan Draf</button>
-    </div>
-  </div>
-</div>
+  </form>
 
-<div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <aside class="preview-card card">
+    <div class="preview-head">
+      <h2>Prompt Pembelajaran Anda</h2>
+      <div style="font-size: 0.8rem; color: #a5d2ef; margin-top:4px;" id="tokenCount">Belum digenerate</div>
+    </div>
+    <textarea id="promptOutput" placeholder="Prompt berstandar Instructional Design 3-Lapis akan dirangkai di sini..."></textarea>
+    <div class="preview-foot">
+      <button type="button" class="btn btn-secondary" id="btnCopy">📋 Salin Prompt</button>
+      <button type="button" class="btn btn-outline" id="btnDownload">💾 Unduh TXT</button>
+    </div>
+  </aside>
+</div>
 
 <script>
 (() => {
-  // DOM References
-  const form = document.getElementById('generatorForm');
-  const out = document.getElementById('promptOutput');
-  const toastEl = document.getElementById('toast');
-  const saveText = document.getElementById('saveText');
-  const saveDot = document.getElementById('saveDot');
-  const previewMeta = document.getElementById('previewMeta');
-  const statusBadge = document.getElementById('statusBadge');
-  const statsText = document.getElementById('statsText');
-  const tokenPill = document.getElementById('tokenPill');
-  const progressBar = document.getElementById('progressBar');
-  const progressPercent = document.getElementById('progressPercent');
-  const editIndicator = document.getElementById('editIndicator');
-  const moduleContainer = document.getElementById('moduleContainer');
-
-  // Presets
-  const presetSelect = document.getElementById('presetSelect');
-  const loadPresetBtn = document.getElementById('loadPresetBtn');
-  const savePresetBtn = document.getElementById('savePresetBtn');
-  const deletePresetBtn = document.getElementById('deletePresetBtn');
-  const exportPresetsBtn = document.getElementById('exportPresetsBtn');
-  const importPresetsBtn = document.getElementById('importPresetsBtn');
-  const importFileInput = document.getElementById('importFileInput');
-
-  // Modals
-  const resetModal = document.getElementById('resetModal');
-  const resetBtn = document.getElementById('resetBtn');
-  const cancelResetBtn = document.getElementById('cancelResetBtn');
-  const confirmResetBtn = document.getElementById('confirmResetBtn');
-
-  const overwriteModal = document.getElementById('overwriteModal');
-  const cancelOverwriteBtn = document.getElementById('cancelOverwriteBtn');
-  const confirmOverwriteBtn = document.getElementById('confirmOverwriteBtn');
-
-  const savePresetModal = document.getElementById('savePresetModal');
-  const newPresetNameInput = document.getElementById('newPresetNameInput');
-  const cancelSavePresetBtn = document.getElementById('cancelSavePresetBtn');
-  const confirmSavePresetBtn = document.getElementById('confirmSavePresetBtn');
-
-  const mobileGenerateBtn = document.getElementById('mobileGenerateBtn');
-
-  // Storage Keys
-  const STORAGE_KEY_CURRENT = 'promptlab_engine_v3_state';
-  const STORAGE_KEY_PRESETS = 'promptlab_engine_v3_presets';
-
-  // Module Master Registry with Pedagogical Phase Tagging
-  const moduleDefinitions = {
-    cover: {
-      name: 'Cover, Identitas Siswa & Petunjuk',
-      phase: 'Orientasi',
-      desc: 'Judul menarik, mapel, kelas, formulir identitas siswa (Nama & menu dropdown pilihan Kelas/Rombel), alokasi waktu, serta tujuan pembelajaran bahasa ramah siswa.'
-    },
-    starter: {
-      name: 'Pertanyaan Pemantik & Uji Miskonsepsi',
-      phase: 'Memahami',
-      desc: 'Ajukan fenomena nyata mengusik rasa ingin tahu siswa dan deteksi dugaan awal (miskonsepsi) sebelum teori disajikan.'
-    },
-    material: {
-      name: 'Eksplorasi Konsep Bertahap (Chunking)',
-      phase: 'Memahami',
-      desc: 'Materi dipecah menjadi 2–4 sub-materi terfokus (chunking). Setiap sub-materi disajikan terpisah per kartu/langkah, dilengkapi analogi kontekstual dan interaksi reflektif mikro. Bebas dari teks panjang.'
-    },
-    subquiz: {
-      name: 'Cek Pemahaman (Kuis Submateri)',
-      phase: 'Memahami',
-      desc: 'Latihan interaktif formatif di akhir tiap submateri dengan umpan balik edukatif dan kesempatan mencoba lagi.'
-    },
-    simulation: {
-      name: 'Simulasi Variabel Interaktif',
-      phase: 'Mengaplikasi',
-      desc: 'Laboratorium visual: siswa memanipulasi variabel kontrol (slider/toggle) untuk mengamati hubungan sebab-akibat nyata.'
-    },
-    game: {
-      name: 'Game Edukasi Penguat Konsep',
-      phase: 'Mengaplikasi',
-      desc: 'Mekanisme edukatif terarah (drag-drop klasifikasi, tebak pola berwaktu santai) yang memperkuat pencapaian TP secara menyenangkan.'
-    },
-    summary: {
-      name: 'Rangkuman Konsep Esensial',
-      phase: 'Mengaplikasi',
-      desc: 'Sintesis konsep kunci dalam bentuk infografis teks atau peta konsep interaktif.'
-    },
-    task: {
-      name: 'Aktivitas Penyelidikan Mandiri',
-      phase: 'Mengaplikasi',
-      desc: 'Panduan penyelidikan kontekstual dengan alat rumah/lingkungan nyata beserta kriteria rubrik keberhasilan.'
-    },
-    reflection: {
-      name: 'Refleksi Diri Metakognitif',
-      phase: 'Merefleksi',
-      desc: 'Pertanyaan pemandu reflektif: bandingkan pemahaman awal vs akhir siswa dan perubahan cara berpikir mereka.'
-    },
-    finalquiz: {
-      name: 'Kuis Evaluasi Akhir Terstruktur',
-      phase: 'Merefleksi',
-      desc: 'Uji komprehensif berimbang (LOTS & HOTS), nilai akhir, dan analisis butir konsep yang dikuasai siswa.'
-    },
-    evidence: {
-      name: 'Bukti Belajar (Cetak / Simpan PDF)',
-      phase: 'Dokumentasi',
-      desc: 'Ringkasan capaian, skor kuis, dan jawaban refleksi siswa yang siap dicetak/disimpan ke PDF tanpa tombol yang mengganggu.'
-    }
+  const $ = id => document.getElementById(id);
+  const form = $('generatorForm');
+  
+  // Save initial HTML states for clean reset
+  const initialModules = {
+    memahami: $('listMemahami').innerHTML,
+    mengaplikasi: $('listMengaplikasi').innerHTML,
+    merefleksi: $('listMerefleksi').innerHTML
   };
-
-  // State Management
-  let currentModules = [
-    { key: 'cover', checked: true },
-    { key: 'starter', checked: true },
-    { key: 'material', checked: true },
-    { key: 'subquiz', checked: true },
-    { key: 'simulation', checked: false },
-    { key: 'game', checked: false },
-    { key: 'summary', checked: false },
-    { key: 'task', checked: false },
-    { key: 'reflection', checked: true },
-    { key: 'finalquiz', checked: true },
-    { key: 'evidence', checked: true }
-  ];
-
-  let isManuallyEdited = false;
-  let isStale = false;
-  let debounceSaveTimer = null;
-  let toastTimer = null;
-
-  function showToast(message) {
-    toastEl.textContent = message;
-    toastEl.classList.add('show');
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => {
-      toastEl.classList.remove('show');
-    }, 3200);
-  }
-
-  // Helpers
-  const val = name => form.elements[name] ? form.elements[name].value.trim() : '';
-  const isGithubMode = () => val('platform') === 'other' || val('publish') === 'github';
-
-  function isModuleChecked(key) {
-    const item = currentModules.find(m => m.key === key);
-    return item ? item.checked : false;
-  }
-
-  // Render reorderable module items
-  function renderModules() {
-    moduleContainer.innerHTML = '';
-    currentModules.forEach((item, index) => {
-      const def = moduleDefinitions[item.key];
-      if (!def) return;
-
-      const row = document.createElement('div');
-      row.className = `module-item ${item.checked ? '' : 'inactive'}`;
-      row.dataset.key = item.key;
-
-      row.innerHTML = `
-        <div class="module-main">
-          <span class="module-order-badge" aria-label="Urutan ${index + 1}">${index + 1}</span>
-          <label class="check-line" style="flex:1;">
-            <input type="checkbox" data-module-key="${item.key}" ${item.checked ? 'checked' : ''}>
-            <span>${def.name} <span class="badge-soft" style="font-size:.7rem; padding:1px 5px;">${def.phase}</span></span>
-          </label>
-        </div>
-        <div class="module-actions">
-          <button type="button" class="btn-icon-order btn-move-up" title="Pindah ke atas" ${index === 0 ? 'disabled' : ''} aria-label="Pindah ${def.name} ke atas">▲</button>
-          <button type="button" class="btn-icon-order btn-move-down" title="Pindah ke bawah" ${index === currentModules.length - 1 ? 'disabled' : ''} aria-label="Pindah ${def.name} ke bawah">▼</button>
-        </div>
-      `;
-
-      // Event: Toggle check
-      const chk = row.querySelector('input[type="checkbox"]');
-      chk.addEventListener('change', (e) => {
-        item.checked = e.target.checked;
-        row.classList.toggle('inactive', !item.checked);
-        markStale();
-        syncUI();
-        debouncedSave();
-      });
-
-      // Move Up
-      const upBtn = row.querySelector('.btn-move-up');
-      upBtn.addEventListener('click', () => {
-        if (index > 0) {
-          const temp = currentModules[index - 1];
-          currentModules[index - 1] = currentModules[index];
-          currentModules[index] = temp;
-          renderModules();
-          markStale();
-          syncUI();
-          debouncedSave();
-        }
-      });
-
-      // Move Down
-      const downBtn = row.querySelector('.btn-move-down');
-      downBtn.addEventListener('click', () => {
-        if (index < currentModules.length - 1) {
-          const temp = currentModules[index + 1];
-          currentModules[index + 1] = currentModules[index];
-          currentModules[index] = temp;
-          renderModules();
-          markStale();
-          syncUI();
-          debouncedSave();
-        }
-      });
-
-      moduleContainer.appendChild(row);
-    });
-  }
-
-  // Progress Calculation
-  function updateProgress() {
-    const required = ['subject', 'educationLevel', 'gradeDetail', 'topic'];
-    let filled = 0;
-    required.forEach(f => {
-      if (val(f).length > 0) filled++;
-    });
-
-    if (val('tpMode') === 'custom' && val('customTP').length > 0) filled++;
-    else if (val('tpMode') === 'ai') filled++;
-
-    const hasAnyCognitive = form.querySelectorAll('[name="cognitiveLevels"]:checked').length > 0;
-    if (hasAnyCognitive) filled++;
-
-    const hasAnyModule = currentModules.some(m => m.checked);
-    if (hasAnyModule) filled++;
-
-    const percent = Math.min(100, Math.round((filled / 7) * 100));
-    progressBar.style.width = percent + '%';
-    progressPercent.textContent = percent + '%';
-  }
-
-  // Character & Token estimation stats
-  function updateStats() {
-    const text = out.value.trim();
-    if (!text) {
-      statsText.textContent = '0 karakter | 0 kata';
-      tokenPill.textContent = '~0 token';
-      return;
-    }
-    const chars = text.length;
-    const words = text.split(/\s+/).filter(Boolean).length;
-    const tokens = Math.round(chars / 3.8);
-
-    statsText.textContent = `${chars.toLocaleString('id-ID')} karakter | ${words.toLocaleString('id-ID')} kata`;
-    tokenPill.textContent = `~${tokens.toLocaleString('id-ID')} token`;
-  }
-
-  function markStale() {
-    if (out.value.trim().length > 0) {
-      isStale = true;
-    }
-  }
-
-  function syncUI() {
-    const gh = isGithubMode();
-    const platformVal = val('platform');
-
-    // SMK Conditional Vocational Field
-    const isSMK = val('educationLevel') === 'SMK';
-    document.getElementById('smkFieldWrapper').hidden = !isSMK;
-
-    // Platform & Deployment visibility
-    document.getElementById('publishField').hidden = platformVal === 'other';
-    document.getElementById('formatField').hidden = !gh;
-
-    const connectVal = val('connect');
-    const connectHint = document.getElementById('connectHint');
-    if (connectVal === 'sheets') {
-      const serviceName = (platformVal === 'canva' && !gh) ? 'Canva Sheets' : 'Google Sheets';
-      connectHint.textContent = `Siswa akan diminta mengisi Nama & Kelas di halaman Cover. Data identitas beserta nilai kuis & progres akan otomatis dikirim ke ${serviceName} agar guru dapat merekap capaian tiap siswa.`;
-    } else if (connectVal === 'csv') {
-      connectHint.textContent = `Siswa dan guru dapat mengunduh rekaman skor dan bukti belajar langsung sebagai berkas tabel .CSV / Cetak PDF di peramban tanpa internet.`;
-    } else {
-      connectHint.textContent = `Data progres dan nilai disimpan lokal di peramban siswa (Offline-first, ramah privasi).`;
-    }
-
-    // TP toggle
-    const isCustomTp = val('tpMode') === 'custom';
-    document.getElementById('customTpWrapper').hidden = !isCustomTp;
-
-    // Simulation toggle
-    document.getElementById('simFields').hidden = !isModuleChecked('simulation');
-
-    // Game toggle
-    document.getElementById('gameFields').hidden = !isModuleChecked('game');
-
-    // Quiz conditional logic
-    const hasSubquiz = isModuleChecked('subquiz');
-    const hasFinalquiz = isModuleChecked('finalquiz');
-    const hasAnyQuiz = hasSubquiz || hasFinalquiz;
-
-    document.getElementById('quizFields').hidden = !hasAnyQuiz;
-    document.getElementById('subCountField').hidden = !hasSubquiz;
-    document.getElementById('finalCountField').hidden = !hasFinalquiz;
-    document.getElementById('subCount').disabled = !hasSubquiz;
-    document.getElementById('finalCount').disabled = !hasFinalquiz;
-
-    // Task conditional logic
-    const hasTask = isModuleChecked('task');
-    document.getElementById('taskFields').hidden = !hasTask;
-    const isCustomTask = val('taskMode') === 'custom';
-    document.getElementById('customTask').hidden = !isCustomTask;
-    document.getElementById('task').required = hasTask && isCustomTask;
-
-    // Evidence conditional logic
-    document.getElementById('evidenceFields').hidden = !isModuleChecked('evidence');
-
-    // Source fields logic
-    document.getElementById('sourceFields').hidden = val('sourceMode') !== 'upload';
-
-    // Status badges & indicators
-    if (!out.value) {
-      previewMeta.textContent = 'Lengkapi materi inti untuk memulai';
-      statusBadge.textContent = 'Belum dibuat';
-      statusBadge.style.background = 'rgba(255,255,255,.18)';
-    } else if (isStale) {
-      previewMeta.textContent = 'Isian berubah — perbarui prompt';
-      statusBadge.textContent = 'Perlu diperbarui';
-      statusBadge.style.background = 'rgba(242, 180, 59, .35)';
-    } else {
-      previewMeta.textContent = 'Prompt siap disalin ke AI';
-      statusBadge.textContent = 'Siap disalin';
-      statusBadge.style.background = 'rgba(97, 211, 165, .32)';
-    }
-
-    editIndicator.classList.toggle('active', isManuallyEdited);
-
-    updateProgress();
-    updateStats();
-  }
-
-  function buildPrompt() {
-    const gh = isGithubMode();
-    const platformNames = {
-      canva: 'Canva Code',
-      gemini: 'Gemini Canvas',
-      other: 'AI Pembuat Kode Web (HTML/JS)'
-    };
-    const platformLabel = platformNames[val('platform')] || 'Gemini Canvas';
-    const activeModules = currentModules.filter(m => m.checked);
-    const hasQuiz = isModuleChecked('subquiz') || isModuleChecked('finalquiz');
-
-    const selectedQuestionTypes = [...form.querySelectorAll('[name="questions"]:checked')].map(el => el.value);
-    const selectedEvidenceTypes = [...form.querySelectorAll('[name="evidence"]:checked')].map(el => el.value);
-
-    const lines = [];
-
-    // Header Instruksi Peran Utama
-    lines.push(
-      `Bertindaklah sebagai Senior Instructional Designer, Educational Software Engineer, dan Pengembang Kurikulum Berpusat pada Peserta Didik.\n` +
-      `Tugas Anda adalah merancang dan mengodekan media pembelajaran interaktif yang utuh, bermakna, dan siap dijalankan langsung di ${platformLabel} tanpa error.`
-    );
-
-    // ==========================================================
-    // LAPIS 1: INSTRUCTIONAL & PEDAGOGICAL DESIGN
-    // ==========================================================
-    const eduLevel = val('educationLevel') || 'SMK';
-    const gradeText = val('gradeDetail') || '-';
-    const classListText = val('classList') || 'X-A, X-B, X-C';
-    const isSMKLevel = eduLevel === 'SMK';
-    const vocation = isSMKLevel ? val('vocationalField') : 'Pendidikan Umum (' + eduLevel + ')';
-
-    const selectedCognitiveLevels = [...form.querySelectorAll('[name="cognitiveLevels"]:checked')].map(el => el.value);
-    const cognitiveStr = selectedCognitiveLevels.length > 0 ? selectedCognitiveLevels.join(', ') : 'C2 (Memahami), C3 (Menerapkan)';
-
-    let layer1 = `## 🎓 LAPIS 1: DESAIN PEMBELAJARAN (INSTRUCTIONAL DESIGN)\n\n`;
-    layer1 += `### 1. Profil Pembelajar & Konteks Belajar\n`;
-    layer1 += `- **Mata Pelajaran:** ${val('subject') || '-'}\n`;
-    layer1 += `- **Jenjang & Tingkat Kelas:** ${eduLevel} — ${gradeText}\n`;
-    if (classListText) {
-      layer1 += `- **Rombongan Belajar / Pilihan Kelas Sasaran:** ${classListText}\n`;
-    }
-    if (isSMKLevel) {
-      layer1 += `- **Program Keahlian / Jurusan SMK:** ${vocation}\n`;
-      layer1 += `*Instruksi Konteks Vokasi:* Hubungkan seluruh konsep ilmiah, contoh konkret, dan studi kasus dengan bidang keahlian **${vocation}** agar pembelajaran terasa nyata dan aplikatif.\n`;
-    } else {
-      layer1 += `- **Sasaran Pembelajar:** Siswa jenjang ${eduLevel} reguler (Gunakan analogi kehidupan sehari-hari yang dekat dengan rentang usia ini).\n`;
-    }
-    layer1 += `- **Kemampuan Awal Siswa:** ${val('initialKnowledge')}\n`;
-    layer1 += `- **Moda Belajar:** ${val('learningMode')}\n`;
-    layer1 += `- **Perangkat Utama Siswa:** ${val('studentDevice')}\n`;
-    layer1 += `- **Topik Utama:** ${val('topic') || '-'}\n`;
-
-    layer1 += `\n### 2. Tujuan Pembelajaran (TP) & Level Kognitif\n`;
-    layer1 += `- **Target Level Kognitif (Bloom):** ${cognitiveStr}\n`;
-    if (val('tpMode') === 'custom' && val('customTP')) {
-      layer1 += `- **Tujuan Pembelajaran Ditentukan Guru:** ${val('customTP')}\n`;
-    } else {
-      layer1 += `- **Formulasi TP Otomatis:** Rumuskan 2–3 Tujuan Pembelajaran yang konkret dan terukur dengan format: *"Peserta didik mampu [Kata Kerja Operasional sesuai target: ${cognitiveStr}] + [Konsep Esensial] + [Konteks/Kriteria Aplikasi]"*.\n`;
-    }
-
-    layer1 += `\n### 3. Identifikasi & Penanganan Miskonsepsi Siswa\n`;
-    if (val('misconceptions')) {
-      layer1 += `- **Miskonsepsi yang Wajib Diuji & Diluruskan:**\n${val('misconceptions')}\n`;
-    } else {
-      layer1 += `- **Identifikasi Miskonsepsi Otomatis:** Identifikasi minimal 2 miskonsepsi umum yang sering dialami siswa pada materi ini. Rancang pertanyaan pemantik dan studi kasus yang secara eksplisit membongkar dan meluruskan miskonsepsi tersebut melalui pembuktian ilmiah/logis.\n`;
-    }
-
-    layer1 += `\n### 4. Alur Pengalaman Belajar (Mindful, Meaningful, Joyful)\n`;
-    layer1 += `Bangun alur yang kohesif dan berkesinambungan:\n`;
-    layer1 += `1. **Fase Memahami:** Membangkitkan rasa ingin tahu lewat fenomena nyata, memetakan praduga awal (miskonsepsi), lalu memfasilitasi penemuan konsep secara bertahap.\n`;
-    layer1 += `2. **Fase Mengaplikasi:** Siswa menggunakan konsep untuk memanipulasi variabel, memecahkan masalah lokal, atau menguji solusi nyata.\n`;
-    layer1 += `3. **Fase Merefleksi:** Siswa menyadari apa yang telah dipelajari, membandingkan pemikiran awal vs akhir, dan mengevaluasi pemahaman diri.`;
-    lines.push(layer1);
-
-    // Sumber Materi
-    let srcBlock = `### 5. Sumber Materi & Integritas Bahan Ajar\n`;
-    if (val('sourceMode') === 'ai') {
-      srcBlock += `Tidak ada berkas materi yang diunggah. AI wajib menyusun materi ajar yang akurat secara ilmiah, faktual, tidak berhalusinasi, serta sesuai dengan perkembangan kognitif siswa jenjang ini.`;
-    } else {
-      srcBlock += `Guru akan melampirkan berkas ${val('sourceType')}. Tunggu dokumen tersebut tersedia dan telaah isinya secara seksama.\n` +
-                  `Pedoman perlakuan: ${val('sourceTreatment')}\n` +
-                  `*PENTING (Anti-Halusinasi): Jika berkas belum terlampir atau gagal terbaca, nyatakan secara jujur. Jangan pernah berpura-pura telah membaca lampiran yang belum ada.*`;
-    }
-    lines.push(srcBlock);
-
-    // ==========================================================
-    // LAPIS 2: MEDIA & INTERACTION DESIGN
-    // ==========================================================
-    let layer2 = `## 🎨 LAPIS 2: DESAIN MEDIA & INTERAKSI (MEDIA DESIGN)\n\n`;
-    layer2 += `### 1. Alur Modul Terpilih (Ikuti urutan kronologis ini secara berurutan; jangan menambahkan modul di luar daftar):\n`;
-
-    activeModules.forEach((m, idx) => {
-      const def = moduleDefinitions[m.key];
-      layer2 += `${idx + 1}. **${def.name}** [${def.phase}]: ${def.desc}\n`;
-    });
-
-    // Identitas Siswa & Menu Dropdown Pilihan Kelas di Cover
-    layer2 += `\n### 2. Formulir Identitas Siswa & Menu Dropdown Kelas di Halaman Cover\n`;
-    layer2 += `- **Input Nama Lengkap:** Kolom input teks wajib untuk nama lengkap siswa.\n`;
-    layer2 += `- **Pilihan Kelas Berbentuk Menu Dropdown (\`<select>\`):** Pemilihan kelas WAJIB menggunakan dropdown menu dengan daftar opsi: **${classListText}** (serta opsi pertama: \`-- Pilih Kelas --\`). DILARANG membuat input kelas berupa teks bebas agar data nama kelas siswa tidak berantakan atau salah ketik.\n`;
-    layer2 += `- **Validasi Masuk:** Tombol "Mulai Belajar" hanya bisa diklik jika siswa telah mengisi nama dan memilih kelas dari dropdown.\n`;
-    if (val('connect') === 'sheets') {
-      layer2 += `- **Pengikatan Sesi & Rekap Nilai:** Pilihan kelas dan nama siswa tersebut otomatis dikirim ke spreadsheet bersama rekapitulasi skor kuis dan status ketuntasan siswa.\n`;
-    }
-
-    // Penegasan Chunking Materi
-    if (isModuleChecked('material')) {
-      layer2 += `\n### 3. Strategi Chunking Materi (Beban Kognitif Terkelola)\n`;
-      layer2 += `- **Struktur Tiap Sub-Materi:** Setiap chunk wajib memuat: (1) Intisari konsep (maksimal 2–3 paragraf santun), (2) Contoh konkret atau analogi kontekstual (diselaraskan dengan kejuruan/lingkungan siswa), (3) Grafis ilustrasi inline SVG yang memperjelas konsep, dan (4) Satu pertanyaan interaktif/cek pemahaman singkat sebelum siswa diizinkan menekan tombol navigasi ke sub-materi selanjutnya.\n`;
-    }
-
-    // Simulasi & Game Guidelines
-    if (isModuleChecked('simulation')) {
-      layer2 += `\n### 4. Standar Simulasi Interaktif\n`;
-      layer2 += `- Simulasi wajib memiliki kondisi awal jelas, variabel kontrol riil (slider/toggle), indikator akibat teramati, dan pertanyaan refleksi interpretasi.\n`;
-      layer2 += `- Dilarang mengarang formula atau hubungan fiktif yang tidak valid secara ilmiah.\n`;
-    }
-
-    if (isModuleChecked('game')) {
-      layer2 += `\n### 5. Standar Game Edukasi\n`;
-      layer2 += `- Game edukasi hanya digunakan jika mekanismenya memperkuat pencapaian TP secara langsung (misal: klasifikasi kategori, drag-and-drop komponen, atau tebak pola).\n`;
-    }
-
-    if (val('differentiation') === 'readiness') {
-      layer2 += `\n### 6. Diferensiasi Kesiapan Belajar (Scaffolding Siswa)\n`;
-      layer2 += `Sediakan opsi tingkat bantuan pada modul materi atau studi kasus:\n`;
-      layer2 += `- **Perlu Bimbingan:** Tampilkan kartu petunjuk bertahap (*hint*) dan glosarium istilah sederhana.\n`;
-      layer2 += `- **Cukup Mahir:** Alur standar mandiri dengan pertanyaan pemandu langsung.\n`;
-      layer2 += `- **Mahir:** Tambahan kartu tantangan *"Bagaimana Jika..."* untuk menguji konsep pada skenario baru.\n`;
-    }
-
-    // Mode Guru (Teacher Preview)
-    if (form.elements['teacherModeToggle'] && form.elements['teacherModeToggle'].checked) {
-      layer2 += `\n### 7. Mode Guru (Teacher Preview)\n`;
-      layer2 += `Sediakan tombol/toggle tersembunyi berlabel **"Mode Guru / Pratinjau Pengajar"** (dapat dibuka dengan klik ikon kunci atau tombol khusus). Jika dibuka, tampilkan:\n`;
-      layer2 += `- Ringkasan TP dan indikator capaian.\n`;
-      layer2 += `- Kunci jawaban seluruh kuis beserta alasan ilmiahnya.\n`;
-      layer2 += `- Analisis miskonsepsi yang sedang diuji pada tiap nomor.\n`;
-      layer2 += `- Rubrik sederhana untuk penilaian aktivitas tugas siswa.\n`;
-    }
-
-    // Blueprint Asesmen
-    if (hasQuiz) {
-      layer2 += `\n### 8. Blueprint Asesmen & Evaluasi Kognitif\n`;
-      layer2 += `- **Penilaian Jujur:** Hanya nilai otomatis soal-soal dengan kunci objektif pasti. Jangan mengklaim "penilaian kecerdasan buatan" terhadap jawaban esai bebas tanpa backend terhubung.`;
-    }
-
-    // Bukti Belajar
-    if (isModuleChecked('evidence') && selectedEvidenceTypes.length > 0) {
-      layer2 += `\n### 7. Bukti Hasil Belajar\n`;
-      layer2 += `- Format pengumpulan: ${selectedEvidenceTypes.join(', ')}.\n`;
-      layer2 += `- **Cetak Ramah Kertas (@media print):** Tata letak dokumen hasil belajar harus rapi saat diekspor ke PDF/cetak tanpa memunculkan bilah navigasi atau tombol interaktif.`;
-    }
-
-    // Desain Visual & Aksesibilitas
-    layer2 += `\n### 8. Desain Visual & Aksesibilitas Inklusif (WCAG AA)\n`;
-    layer2 += `- **Gaya Visual:** ${val('style')}.\n`;
-    layer2 += `- **Ilustrasi & Grafis:** ${val('images') === 'auto' ? 'Gunakan inline SVG beranimasi ringan dan tajam pada layar ponsel/Retina tanpa ketergantungan berkas gambar eksternal.' : 'Sediakan placeholder rapi untuk gambar yang akan diunggah guru.'}\n`;
-    layer2 += `- **Audio & Efek Suara:** ${val('audio') === 'none' ? 'Tanpa suara (senyap & hemat kuota).' : (val('audio') === 'auto' ? 'Gunakan Web Audio API sintetis ringan. Suara hanya berbunyi setelah interaksi klik pengguna, volume ramah, dan tombol Mute selalu terlihat jelas.' : 'Sediakan kontrol suara yang dapat dimatikan kapan saja.')}\n`;
-    layer2 += `- **Aksesibilitas Perangkat Ponsel:** Seluruh target sentuhan minimal 44x44 piksel, ukuran teks bacaan minimal 16 piksel, kontras teks memenuhi standar WCAG AA (rasio minimal 4.5:1), dan sediakan alternatif navigasi keyboard untuk elemen geser/drag-drop.\n`;
-    layer2 += `- **Bahasa 100% Bahasa Indonesia:** Seluruh teks tombol, judul, narasi, dan pesan umpan balik menggunakan Bahasa Indonesia baku, komunikatif, dan santun.`;
-    lines.push(layer2);
-
-    // ==========================================================
-    // LAPIS 3: TECHNICAL ARCHITECTURE & QUALITY GATE
-    // ==========================================================
-    let layer3 = `## 💻 LAPIS 3: SPESIFIKASI TEKNIS & QUALITY GATE (TECHNICAL SPECIFICATION)\n\n`;
-    layer3 += `### 1. Struktur Berkas & Lingkungan\n`;
-    layer3 += `- **Target Platform:** ${platformLabel} (Publikasi: ${gh ? 'GitHub Pages' : platformLabel})\n`;
-    if (gh) {
-      layer3 += val('format') === 'single'
-        ? `- **Format:** Seluruh kode (HTML5 semantik, CSS dengan Tailwind atau <style>, dan JavaScript modern) dikemas dalam SATU berkas \`index.html\` mandiri.\n`
-        : `- **Format:** Berkas \`index.html\` bersih dengan struktur folder \`assets/images/\` dan \`assets/audio/\` yang konsisten.\n`;
-    } else {
-      layer3 += `- **Format:** Berikan kode lengkap siap pakai yang langsung dapat dijalankan di dalam editor ${platformLabel}.\n`;
-    }
-
-    // Jaringan Lemah / Offline
-    if (val('networkOptimization') === 'low-bandwidth') {
-      layer3 += `- **Optimasi Jaringan Lemah:** Ukuran kode ringkas (<150KB), hindari dependensi pustaka pihak ketiga yang berat, dan pastikan aplikasi dapat terus beroperasi penuh secara offline setelah pemuatan pertama (Client-side rendering).\n`;
-    }
-
-    // Penyimpanan
-    const conn = val('connect');
-    if (conn === 'sheets') {
-      const sheetPlatform = (val('platform') === 'canva' && !gh) ? 'Canva Sheets' : 'Google Sheets';
-      layer3 += `- **Penyimpanan Data & Rekap Nilai Siswa (${sheetPlatform}):**\n` +
-                `  1. Aplikasi wajib merekam identitas siswa dari cover: **Nama Siswa** dan **Kelas** (berdasarkan pilihan dropdown: ${classListText}).\n` +
-                `  2. Saat siswa menyelesaikan kuis/evaluasi, aplikasi mengirimkan rekapitulasi data: [Timestamp, Nama Siswa, Kelas, Skor Kuis Formatif, Skor Kuis Akhir, Status Ketuntasan (Tuntas / Perlu Pengayaan), dan Jawaban Refleksi Singkat] ke ${sheetPlatform}.\n` +
-                `  3. Sertakan contoh script webhook/Google Apps Script (fungsi \`doPost(e)\`) yang ringkas dan siap disalin guru ke Apps Script agar langsung terhubung ke kolom Google Sheets secara otomatis.\n` +
-                `  4. Sediakan indikator umpan balik visual saat data terkirim (misal: badge "✅ Nilai Anda berhasil terekam di jurnal guru") dan penanganan fallback jika koneksi internet siswa tidak stabil.\n`;
-    } else if (conn === 'csv') {
-      layer3 += `- **Penyimpanan Data:** Simpan riwayat di localStorage dan sediakan tombol "Ekspor Data (.CSV)" untuk mengunduh rekap skor siswa langsung ke ponsel/komputer.\n`;
-    } else {
-      layer3 += `- **Penyimpanan Data:** Simpan riwayat dan progres belajar secara lokal di browser (\`localStorage\`) tanpa meminta login akun.\n`;
-    }
-
-    // Kontrak Output & Quality Gate
-    layer3 += `\n### 2. KONTRAK OUTPUT & QUALITY GATE (Wajib diverifikasi sebelum menyajikan hasil)\n`;
-    layer3 += `Sebelum menyajikan kode akhir, periksalah seluruh aspek berikut secara mandiri:\n`;
-    layer3 += `| Aspek | Pemeriksaan Wajib |\n`;
-    layer3 += `| :--- | :--- |\n`;
-    layer3 += `| **Kesesuaian TP** | Setiap submateri, kuis, dan aktivitas terhubung erat dengan Tujuan Pembelajaran. |\n`;
-    layer3 += `| **Keutuhan Kode** | TIDAK ADA kode terpotong, TIDAK ADA placeholder kosong (\`// ... lanjutkan ...\`), dan tidak ada fungsi tombol mati. |\n`;
-    layer3 += `| **Kunci & Skor** | Semua soal kuis memiliki kunci pasti, skor dapat dihitung tepat, dan umpan balik tampil benar. |\n`;
-    layer3 += `| **Teacher Mode** | Mode Guru / Teacher Preview berfungsi dan menampilkan kunci serta analisis TP. |\n`;
-    layer3 += `| **Responsif HP** | Tata letak tidak meluap (*no horizontal scroll*), tombol mudah ditekan ibu jari di layar 5 inci. |\n`;
-    layer3 += `| **Aksesibilitas** | Navigasi keyboard bekerja, kontras teks tajam, dan elemen audio memiliki tombol Mute. |\n`;
-    layer3 += `| **Keamanan Data** | Tidak ada API key, token rahasia, atau kredensial yang diekspos di kode klien. |\n\n`;
-
-    layer3 += `### 3. ATURAN KEAKURATAN MUTLAK (ANTI-HALUSINASI)\n`;
-    layer3 += `- DILARANG mengarang URL tautan web fiktif, pustaka eksternal yang tidak ada, atau path aset lokal yang rusak.\n`;
-    layer3 += `- DILARANG mengklaim telah menguji koneksi spreadsheet atau membaca berkas guru yang belum diunggah.\n`;
-    layer3 += `- DILARANG menggunakan fungsi dialog peramban usang seperti \`alert()\` atau \`confirm()\`. Gunakan modal interaktif berbasis HTML/CSS.\n`;
-    layer3 += `- Jika ada batas teknis platform, sampaikan keterbatasan tersebut secara transparan dan gunakan solusi alternatif yang berfungsi penuh.`;
-    lines.push(layer3);
-
-    // Catatan Khusus Guru
-    if (val('customNotes')) {
-      lines.push(
-        `## ⚠️ CATATAN KHUSUS & KONTEKS LOKAL DARI GURU (PRIORITAS TINGGI)\n` +
-        val('customNotes')
-      );
-    }
-
-    return lines.join('\n\n');
-  }
-
-  function handleGenerate() {
-    form.querySelectorAll('.invalid').forEach(el => el.classList.remove('invalid'));
-
-    const required = ['subject', 'educationLevel', 'gradeDetail', 'topic'];
-    let firstInvalid = null;
-
-    required.forEach(name => {
-      const input = form.elements[name];
-      if (!input || !input.value.trim()) {
-        input.classList.add('invalid');
-        if (!firstInvalid) firstInvalid = input;
-      }
-    });
-
-    if (val('tpMode') === 'custom' && !val('customTP')) {
-      const tpInput = form.elements['customTP'];
-      tpInput.classList.add('invalid');
-      if (!firstInvalid) firstInvalid = tpInput;
-    }
-
-    const cognitiveChecked = form.querySelectorAll('[name="cognitiveLevels"]:checked');
-    if (cognitiveChecked.length === 0) {
-      showToast('⚠️ Centang minimal satu level kognitif (Taksonomi Bloom).');
-      return;
-    }
-
-    if (firstInvalid) {
-      firstInvalid.focus();
-      showToast('⚠️ Lengkapi mata pelajaran, jenjang, kelas, dan topik materi.');
-      return;
-    }
-
-    if (!currentModules.some(m => m.checked)) {
-      showToast('⚠️ Centang minimal satu modul media pembelajaran.');
-      return;
-    }
-
-    const hasQuiz = isModuleChecked('subquiz') || isModuleChecked('finalquiz');
-    const selectedQuestions = [...form.querySelectorAll('[name="questions"]:checked')];
-    if (hasQuiz && selectedQuestions.length === 0) {
-      showToast('⚠️ Tentukan minimal satu bentuk variasi soal kuis.');
-      return;
-    }
-
-    if (isManuallyEdited && out.value.trim().length > 0) {
-      overwriteModal.classList.add('active');
-      return;
-    }
-
-    executeGeneration();
-  }
-
-  function executeGeneration() {
-    out.value = buildPrompt();
-    isStale = false;
-    isManuallyEdited = false;
-    syncUI();
-    debouncedSave();
-    showToast('✨ Prompt berstandar Instructional Design Engine berhasil dibuat!');
-
-    if (window.innerWidth <= 1100) {
-      out.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  }
-
-  function getFormData() {
-    const data = {};
-    for (const el of form.elements) {
-      if (!el.name) continue;
-      if (el.type === 'checkbox') {
-        data[el.name] = data[el.name] || [];
-        if (el.checked) data[el.name].push(el.value);
-      } else {
-        data[el.name] = el.value;
-      }
-    }
-    data._modules = currentModules;
-    return data;
-  }
-
-  function applyFormData(data) {
-    if (!data || typeof data !== 'object') return;
-
-    for (const el of form.elements) {
-      if (!el.name || !(el.name in data)) continue;
-      if (el.type === 'checkbox') {
-        el.checked = Array.isArray(data[el.name]) && data[el.name].includes(el.value);
-      } else {
-        el.value = data[el.name];
-      }
-    }
-
-    if (Array.isArray(data._modules)) {
-      const existingKeys = new Set(data._modules.map(m => m.key));
-      currentModules = data._modules.slice();
-      Object.keys(moduleDefinitions).forEach(k => {
-        if (!existingKeys.has(k)) {
-          currentModules.push({ key: k, checked: false });
-        }
-      });
-    }
-    renderModules();
-    syncUI();
-  }
-
-  function saveCurrentToStorage() {
-    saveDot.classList.add('syncing');
-    try {
-      localStorage.setItem(STORAGE_KEY_CURRENT, JSON.stringify({
-        form: getFormData(),
-        output: out.value,
-        isStale,
-        isManuallyEdited
-      }));
-      saveText.textContent = 'Tersimpan otomatis';
-    } catch (e) {
-      saveText.textContent = 'Penyimpanan penuh';
-    } finally {
-      setTimeout(() => saveDot.classList.remove('syncing'), 250);
-    }
-  }
-
-  function debouncedSave() {
-    clearTimeout(debounceSaveTimer);
-    debounceSaveTimer = setTimeout(saveCurrentToStorage, 300);
-  }
-
-  function getPresets() {
-    try {
-      const list = JSON.parse(localStorage.getItem(STORAGE_KEY_PRESETS));
-      return Array.isArray(list) ? list : [];
-    } catch (e) {
-      return [];
-    }
-  }
-
-  function savePresets(list) {
-    try {
-      localStorage.setItem(STORAGE_KEY_PRESETS, JSON.stringify(list));
-      populatePresetSelect();
-    } catch (e) {
-      showToast('⚠️ Gagal menyimpan draf ke memori browser.');
-    }
-  }
-
-  function populatePresetSelect() {
-    const list = getPresets();
-    presetSelect.innerHTML = '';
-
-    if (list.length === 0) {
-      const opt = document.createElement('option');
-      opt.value = '';
-      opt.textContent = '(Belum ada draf tersimpan)';
-      presetSelect.appendChild(opt);
-      loadPresetBtn.disabled = true;
-      deletePresetBtn.disabled = true;
-      return;
-    }
-
-    list.forEach((item, idx) => {
-      const opt = document.createElement('option');
-      opt.value = idx;
-      opt.textContent = `${item.name} (${item.date || 'Tersimpan'})`;
-      presetSelect.appendChild(opt);
-    });
-
-    loadPresetBtn.disabled = false;
-    deletePresetBtn.disabled = false;
-  }
-
-  // Event Listeners
-  form.addEventListener('input', (e) => {
-    if (e.target.classList.contains('invalid')) {
-      e.target.classList.remove('invalid');
-    }
-    markStale();
-    syncUI();
-    debouncedSave();
+  
+  // Toggle Logic
+  $('level').addEventListener('change', e => {
+    $('vocationalField').style.display = e.target.value === 'SMK' ? 'block' : 'none';
+  });
+  
+  $('sourceMode').addEventListener('change', e => {
+    $('sourceFields').style.display = e.target.value === 'upload' ? 'grid' : 'none';
   });
 
-  form.addEventListener('change', () => {
-    syncUI();
-    debouncedSave();
+  $('tpMode').addEventListener('change', e => {
+    $('tpCustom').style.display = e.target.value === 'custom' ? 'block' : 'none';
   });
 
-  form.addEventListener('submit', (e) => {
+  $('taskMode').addEventListener('change', e => {
+    $('taskCustom').style.display = e.target.value === 'custom' ? 'block' : 'none';
+  });
+
+  $('gameType').addEventListener('change', e => {
+    $('gameCustom').style.display = e.target.value === 'custom' ? 'block' : 'none';
+  });
+
+  $('teacherMode').addEventListener('change', e => {
+    $('teacherPass').disabled = e.target.value === 'no';
+  });
+
+  // Checkbox Strikethrough Visual (Delegated to handle resets)
+  document.addEventListener('change', (e) => {
+    if (e.target && e.target.classList.contains('module-check')) {
+      const li = e.target.closest('li');
+      if (e.target.checked) li.classList.remove('inactive');
+      else li.classList.add('inactive');
+    }
+  });
+
+  // Reorder Logic (Locked by Phase)
+  document.querySelectorAll('.module-list').forEach(list => {
+    list.addEventListener('click', e => {
+      const btn = e.target.closest('.btn-move');
+      if (!btn) return;
+      const li = btn.closest('li');
+      if (btn.classList.contains('up') && li.previousElementSibling) {
+        list.insertBefore(li, li.previousElementSibling);
+      } else if (btn.classList.contains('down') && li.nextElementSibling) {
+        list.insertBefore(li.nextElementSibling, li);
+      }
+      updateMoveButtons(list);
+    });
+    updateMoveButtons(list);
+  });
+
+  function updateMoveButtons(list) {
+    const items = list.querySelectorAll('li');
+    items.forEach((li, idx) => {
+      const up = li.querySelector('.up');
+      const down = li.querySelector('.down');
+      if (up) up.disabled = idx === 0;
+      if (down) down.disabled = idx === items.length - 1;
+    });
+  }
+
+  // Get active items in order
+  function getOrder(listId) {
+    const activeItems = Array.from($(listId).querySelectorAll('li'))
+      .filter(li => !li.querySelector('.module-check') || li.querySelector('.module-check').checked);
+    
+    if (activeItems.length === 0) return "- (Tidak ada modul dipilih)";
+    
+    return activeItems.map((li, i) => {
+      let name = li.querySelector('.module-name').textContent.trim();
+      if (li.dataset.key === 'task') {
+        let taskStr = $('taskMode').value === 'custom' ? $('taskCustom').value.trim() : $('taskMode').value;
+        name = `Aktivitas Mandiri (Model: ${taskStr})`;
+      }
+      if (li.dataset.key === 'game') {
+        let gameStr = $('gameType').value === 'custom' ? $('gameCustom').value.trim() : $('gameType').value;
+        name = `Game Edukatif (Jenis: ${gameStr})`;
+      }
+      return `${i+1}. ${name}`;
+    }).join('\n');
+  }
+
+  // Builder
+  form.addEventListener('submit', e => {
     e.preventDefault();
-    handleGenerate();
-  });
-
-  mobileGenerateBtn.addEventListener('click', () => {
-    handleGenerate();
-  });
-
-  out.addEventListener('input', () => {
-    isManuallyEdited = true;
-    updateStats();
-    syncUI();
-    debouncedSave();
-  });
-
-  // Copy with fallback
-  document.getElementById('copyBtn').addEventListener('click', () => {
-    if (!out.value.trim()) {
-      showToast('⚠️ Buat prompt terlebih dahulu.');
+    if(!$('subject').value || !$('topic').value) {
+      alert('Mapel dan Materi Inti wajib diisi!');
       return;
     }
-    if (isStale) {
-      showToast('ℹ️ Isian formulir berubah. Pertimbangkan untuk memperbarui prompt.');
+
+    const val = id => $(id).value.trim();
+    const isSMK = val('level') === 'SMK';
+    const isContext = $('contextualize').checked;
+    
+    const dbVal = val('database');
+    const isDB = dbVal !== 'no';
+    
+    const qTypes = Array.from(document.querySelectorAll('input[name="qType"]:checked')).map(cb => cb.value);
+    
+    const sourceInstruction = val('sourceMode') === 'ai' 
+      ? 'AI susun materi secara logis dan mandiri sesuai topik.' 
+      : `SAYA MELAMPIRKAN DOKUMEN MATERI (${val('sourceType')}). Tunggu hingga terbaca. ATURAN: ${val('sourceTreatment')}`;
+
+    // Target Publikasi Logic
+    const publishTarget = val('publish');
+    let publishNote = '';
+    if (publishTarget === 'gsites') {
+      publishNote = 'PENTING: Karena target publikasi adalah Google Sites (media dimuat dalam iframe), PASTIKAN penanganan localStorage memiliki mekanisme try-catch/fallback agar aplikasi tidak mogok (crash) jika browser memblokir kuki pihak ketiga.';
+    } else if (publishTarget === 'github') {
+      publishNote = 'PENTING: Target publikasi adalah GitHub Pages. Pastikan seluruh struktur path aset adalah path relatif yang benar dan valid.';
     }
 
-    out.focus();
-    out.select();
-    let copied = false;
-    try {
-      copied = document.execCommand('copy');
-    } catch (e) {
-      copied = false;
+    // Database Guardrail Logic
+    let dbInstruction = 'Simpan progress, nama, dan skor secara lokal di peramban siswa (Local Storage).';
+    if (isDB) {
+      const dbType = dbVal === 'canva_sheet' ? 'Canva Sheets' : 'Google Spreadsheet API';
+      dbInstruction = `Terdapat kebutuhan integrasi skor ke ${dbType}. KARENA ENDPOINT BELUM DIBERIKAN SEKARANG, Anda WAJIB:
+1. Membuat antarmuka/adapter fungsi penyimpanan data di kode JavaScript.
+2. Menggunakan variabel placeholder yang JELAS (contoh: YOUR_DATABASE_ENDPOINT).
+3. DILARANG mengklaim integrasi aktif atau memalsukan koneksi sukses jika variabel belum diisi.
+4. WAJIB menyediakan fallback penyimpanan sementara ke Local Storage jika endpoint kosong.
+5. Sediakan UI yang menampilkan status koneksi secara jujur (misal: "Menyimpan secara lokal (Database belum dikonfigurasi)").`;
     }
 
-    if (!copied && navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(out.value).then(() => {
-        showToast('📋 Prompt disalin ke papan klip!');
-      }).catch(() => {
-        showToast('Teks terseleksi. Tekan Ctrl+C untuk menyalin.');
-      });
-    } else if (copied) {
-      showToast('📋 Prompt disalin ke papan klip!');
+    const prompt = `Bertindaklah sebagai Instructional Designer dan Web Developer ahli. Buatlah satu paket Media Pembelajaran Interaktif (MPI) menggunakan ${$('platform').options[$('platform').selectedIndex].text}.
+
+==================================================
+LAPIS 1: PEDAGOGICAL & INSTRUCTIONAL DESIGN
+==================================================
+📌 KONTEKS PEMBELAJARAN
+- Mata Pelajaran: ${val('subject')}
+- Topik Inti: ${val('topic')}
+- Jenjang: ${val('level')}${isSMK ? ` (Jurusan: ${val('jurusan')})` : ''}
+${isSMK ? `- Pendekatan Materi: ${isContext ? 'WAJIB dikontekstualisasikan (analogi, studi kasus, contoh) secara spesifik dengan bidang industri/kejuruan ' + val('jurusan') : 'Fokuskan murni pada substansi umum mata pelajaran, JANGAN dikaitkan secara spesifik dengan jurusan.'}` : ''}
+- Kelas Tersedia: ${val('classList')}
+- Durasi: ${val('duration')}
+
+📚 SUMBER MATERI
+${sourceInstruction}
+
+🎯 TUJUAN PEMBELAJARAN
+${val('tpMode') === 'custom' ? val('tpCustom') : 'WAJIB rumuskan 2-3 TP spesifik dan operasional menggunakan format (KKO + Objek + Kriteria batas nyata). JANGAN gunakan teks placeholder.'}
+
+📝 PENGATURAN ASESMEN & EVALUASI
+- Formatif (Per Submateri): ${val('subCount')} butir.
+- Sumatif (Kuis Akhir): ${val('finalCount')} butir.
+- Distribusi Kognitif: ${val('blueprint')}.
+- Variasi Bentuk Soal: ${qTypes.length > 0 ? qTypes.join(', ') : 'Pilihan ganda'}.
+- Aturan Kuis: Setiap butir soal dalam kode WAJIB menyertakan metadata internal (TP yang diukur, kunci akurat, dan feedback edukatif mengapa jawaban benar/salah).
+
+==================================================
+LAPIS 2: MEDIA & INTERACTION DESIGN
+==================================================
+Rancang UI/UX yang mencakup komponen berikut sesuai urutan fase pedagogis ini:
+
+[STRUKTUR INTI AWAL]
+1. Halaman Cover & Judul
+2. Identitas Siswa (WAJIB menggunakan elemen <select> dropdown untuk Kelas berdasarkan opsi: ${val('classList')}, dan input teks Nama)
+3. Petunjuk Penggunaan & TP
+4. Menu Utama (Dashboard Navigasi)
+
+[FASE 1: MEMAHAMI (Membangun Konsep)]
+${getOrder('listMemahami')}
+*Aturan Chunking: Dilarang menyajikan "wall of text". Pecah materi menjadi 2-4 kartu terfokus.*
+
+[FASE 2: MENGAPLIKASI (Interaksi)]
+${getOrder('listMengaplikasi')}
+*Kewajiban Game (Jika Dipilih): Mekanika game HARUS memberikan kontribusi nyata terhadap pencapaian minimal satu TP. Dilarang menjadikan game sebagai aktivitas dekoratif atau hiburan semata tanpa fungsi evaluasi.*
+
+[FASE 3: MEREFLEKSI (Penarikan Makna)]
+${getOrder('listMerefleksi')}
+
+🕹️ DIFERENSIASI KESIAPAN (SCAFFOLDING)
+Sediakan opsi "Bantuan Terpandu" bagi siswa yang kesulitan (hint ekstra), dan opsi "Tantangan Lanjut" bagi siswa mahir di studi kasus/latihan.
+
+👨‍🏫 MODE GURU
+${val('teacherMode') === 'yes' ? `Tambahkan Ikon Guru (👨‍🏫) di sudut Halaman Cover. Jika diklik, minta password "${val('teacherPass')}" untuk membuka panel rahasia berisi Kunci Jawaban, Rubrik, dan Pemetaan TP.` : 'Tidak menggunakan Mode Guru.'}
+
+==================================================
+LAPIS 3: TECHNICAL & QUALITY GATE
+==================================================
+🖥️ AKSESIBILITAS & ERGONOMI (WAJIB)
+- Desain antarmuka WAJIB berasio 16:9 agar optimal di Papan Interaktif (Interactive Flat Panel) / Laptop, dan otomatis menyesuaikan bentuk di HP siswa.
+- Navigasi Papan Interaktif: Letakkan Ikon "HOME" di Kiri Atas. Letakkan Tombol "KEMBALI" di Kiri Bawah, dan Tombol "SELANJUTNYA" TEPAT di sebelah kanannya (berdampingan di Kiri Bawah). JANGAN letakkan tombol navigasi di sudut kanan agar mudah dijangkau guru.
+${publishNote}
+
+💾 PENYIMPANAN DATA & DATABASE
+${dbInstruction}
+
+🖼️ ASET VISUAL & AUDIO
+- Gaya Tampilan: ${val('mediaStyle')}
+- Ilustrasi: ${val('mediaImages')}
+- Audio: ${val('mediaAudio')} (WAJIB sediakan tombol Mute on/off).
+
+KONTRAK OUTPUT:
+Hasilkan kode HTML/CSS/JS secara utuh dalam satu file. Jangan memotong array pertanyaan.`;
+
+    $('promptOutput').value = prompt;
+    $('tokenCount').textContent = `~${prompt.split(/\s+/).length} kata | Siap disalin`;
+  });
+
+  // Fallback Copy Function
+  function copyToClipboard(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text)
+        .then(() => copySuccess())
+        .catch(() => fallbackCopy(text));
     } else {
-      showToast('Teks terseleksi. Tekan Ctrl+C untuk menyalin.');
+      fallbackCopy(text);
     }
-  });
+  }
 
-  // Download TXT
-  document.getElementById('downloadBtn').addEventListener('click', () => {
-    if (!out.value.trim()) {
-      showToast('⚠️ Buat prompt terlebih dahulu.');
-      return;
-    }
-    const blob = new Blob([out.value], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    const safeTopic = (val('topic') || 'media-belajar').toLowerCase().replace(/[^a-z0-9]/g, '-').slice(0, 30);
-    link.href = url;
-    link.download = `PromptLab_${safeTopic}.txt`;
-    link.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-    showToast('💾 Berkas prompt TXT berhasil diunduh!');
-  });
-
-  // Reset Modal
-  resetBtn.addEventListener('click', () => resetModal.classList.add('active'));
-  cancelResetBtn.addEventListener('click', () => resetModal.classList.remove('active'));
-  confirmResetBtn.addEventListener('click', () => {
-    resetModal.classList.remove('active');
-    form.reset();
-    out.value = '';
-    isStale = false;
-    isManuallyEdited = false;
-
-    currentModules.forEach(m => {
-      m.checked = ['cover', 'starter', 'material', 'subquiz', 'reflection', 'finalquiz', 'evidence'].includes(m.key);
-    });
-    renderModules();
-    syncUI();
-    debouncedSave();
-    showToast('🔄 Formulir telah dikosongkan.');
-  });
-
-  // Overwrite Modal
-  cancelOverwriteBtn.addEventListener('click', () => overwriteModal.classList.remove('active'));
-  confirmOverwriteBtn.addEventListener('click', () => {
-    overwriteModal.classList.remove('active');
-    executeGeneration();
-  });
-
-  // Save Preset Modal
-  savePresetBtn.addEventListener('click', () => {
-    const defaultName = val('topic') ? `${val('subject') || 'Media'} - ${val('topic')}` : '';
-    newPresetNameInput.value = defaultName;
-    savePresetModal.classList.add('active');
-    newPresetNameInput.focus();
-  });
-  cancelSavePresetBtn.addEventListener('click', () => savePresetModal.classList.remove('active'));
-  confirmSavePresetBtn.addEventListener('click', () => {
-    const name = newPresetNameInput.value.trim() || `Draf ${new Date().toLocaleDateString('id-ID')}`;
-    const list = getPresets();
-    const dateStr = new Date().toLocaleDateString('id-ID', { month: 'short', day: 'numeric' });
-
-    list.unshift({
-      name,
-      date: dateStr,
-      data: getFormData(),
-      output: out.value
-    });
-
-    savePresets(list);
-    savePresetModal.classList.remove('active');
-    showToast(`💾 Draf "${name}" berhasil disimpan!`);
-  });
-
-  // Load Preset
-  loadPresetBtn.addEventListener('click', () => {
-    const list = getPresets();
-    const idx = parseInt(presetSelect.value, 10);
-    if (isNaN(idx) || !list[idx]) return;
-
-    const preset = list[idx];
-    applyFormData(preset.data);
-    out.value = preset.output || '';
-    isStale = false;
-    isManuallyEdited = false;
-    syncUI();
-    debouncedSave();
-    showToast(`📂 Draf "${preset.name}" berhasil dimuat.`);
-  });
-
-  // Delete Preset
-  deletePresetBtn.addEventListener('click', () => {
-    const list = getPresets();
-    const idx = parseInt(presetSelect.value, 10);
-    if (isNaN(idx) || !list[idx]) return;
-
-    const removed = list.splice(idx, 1);
-    savePresets(list);
-    showToast(`🗑️ Draf "${removed[0].name}" dihapus.`);
-  });
-
-  // Export JSON
-  exportPresetsBtn.addEventListener('click', () => {
-    const list = getPresets();
-    if (list.length === 0) {
-      showToast('⚠️ Belum ada draf tersimpan untuk diekspor.');
-      return;
-    }
-    const exportData = {
-      app: 'PromptLab — Media Pembelajaran Interaktif',
-      version: 3,
-      exportedAt: new Date().toISOString(),
-      presets: list
-    };
-    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `PromptLab_Presets_${new Date().toISOString().slice(0,10)}.json`;
-    link.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-    showToast('⬇️ Preset berhasil diekspor ke JSON!');
-  });
-
-  // Import JSON
-  importPresetsBtn.addEventListener('click', () => importFileInput.click());
-  importFileInput.addEventListener('change', (e) => {
-    const file = e.target.files && e.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      try {
-        const parsed = JSON.parse(event.target.result);
-        const importedPresets = Array.isArray(parsed.presets) ? parsed.presets : (Array.isArray(parsed) ? parsed : null);
-
-        if (!importedPresets) {
-          throw new Error('Format JSON tidak sesuai.');
-        }
-
-        const existing = getPresets();
-        const merged = [...importedPresets, ...existing];
-        savePresets(merged);
-        showToast(`⬆️ Berhasil mengimpor ${importedPresets.length} draf preset!`);
-      } catch (err) {
-        showToast('⚠️ Berkas JSON tidak valid atau rusak.');
-      }
-      importFileInput.value = '';
-    };
-    reader.readAsText(file);
-  });
-
-  // Close modals on backdrop click
-  [resetModal, overwriteModal, savePresetModal].forEach(modal => {
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) modal.classList.remove('active');
-    });
-  });
-
-  window.onload = function() {
-    renderModules();
-    populatePresetSelect();
-
+  function fallbackCopy(text) {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "fixed";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
     try {
-      const savedState = JSON.parse(localStorage.getItem(STORAGE_KEY_CURRENT));
-      if (savedState && typeof savedState === 'object') {
-        applyFormData(savedState.form);
-        out.value = typeof savedState.output === 'string' ? savedState.output : '';
-        isStale = !!savedState.isStale;
-        isManuallyEdited = !!savedState.isManuallyEdited;
-        saveText.textContent = 'Draf aktif dipulihkan';
-      }
-    } catch (e) {
-      saveText.textContent = 'Siap digunakan';
+      document.execCommand('copy');
+      copySuccess();
+    } catch (err) {
+      alert('Gagal menyalin otomatis. Silakan blok teks dan salin secara manual.');
     }
+    document.body.removeChild(textArea);
+  }
 
-    syncUI();
-  };
+  function copySuccess() {
+    const btn = $('btnCopy'); 
+    btn.textContent = '✅ Berhasil Disalin';
+    setTimeout(() => btn.textContent = '📋 Salin Prompt', 2000);
+  }
+
+  $('btnCopy').addEventListener('click', () => {
+    const text = $('promptOutput').value;
+    if (!text) return alert('Buat prompt terlebih dahulu!');
+    copyToClipboard(text);
+  });
+
+  // Download
+  $('btnDownload').addEventListener('click', () => {
+    const text = $('promptOutput').value;
+    if (!text) return alert('Buat prompt terlebih dahulu!');
+    const blob = new Blob([text], {type: 'text/plain'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `Prompt_MPI_${$('subject').value.replace(/[^a-zA-Z0-9]/g, '_')}.txt`;
+    a.click();
+  });
+
+  // Reset Formulir
+  $('btnReset').addEventListener('click', () => {
+    // We use reload to ensure 100% clean state of DOM modules without complex innerHTML tracking
+    if(confirm('Anda yakin ingin mereset formulir dan menghapus semua pilihan?')) { 
+      window.location.reload();
+    }
+  });
+
 })();
 </script>
 </body>
