@@ -1,11 +1,13 @@
-<!doctype html>
+
+<!DOCTYPE html>
+
 <html lang="id">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Generator prompt Instructional Design 3-Lapis untuk media pembelajaran PJJ/MPI.">
-  <title>PromptLab Media Interaktif v3</title>
-  <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta content="Generator prompt media pembelajaran interaktif: materi mendalam, aktivitas berbukti, asesmen, dan umpan balik." name="description"/>
+<title>PromptLab v4 — Media Pembelajaran Bermakna</title>
+<style>
     :root {
       --ink: #102a43; --muted: #627d98; --navy: #0d3b66; --blue: #1877b9;
       --sky: #eaf7fd; --cyan: #27a8e0; --amber: #f4b942; --paper: #f5f9fc;
@@ -81,565 +83,604 @@
       .bottom-actions .btn { width: 100%; }
       .conditional-box { grid-template-columns: 1fr; }
     }
-  </style>
+  
+    .intro-note { padding:20px 24px; margin-bottom:24px; border:1px solid #cce4f1; background:#eaf7fd; border-radius:16px; line-height:1.6; }
+    .intro-note p { margin:8px 0 0; font-size:.9rem; color:#284b63; }
+    .profile-details { background:#f5f9fc; padding:14px; border-radius:10px; }
+    summary { cursor:pointer; font-weight:700; color:#284b63; }
+    .hint { line-height:1.55; }
+    .field, .card, form, aside { min-width:0; }
+    .btn:disabled { opacity:.5; cursor:not-allowed; transform:none; }
+    .preview-card { height:calc(100vh - 112px); min-height:440px; }
+    #promptOutput { min-height:240px; }
+    button:focus-visible, summary:focus-visible { outline:3px solid #1877b9; outline-offset:3px; }
+    #formStatus { padding:12px 2px; min-height:32px; }
+    @media (max-width:1024px) { .preview-card { height:620px; max-height:none; } }
+    @media (max-width:600px) {
+      .topbar { padding:14px 16px; gap:8px; flex-wrap:wrap; position:static; }
+      .topbar > div:last-child { font-size:.75rem !important; }
+      .workspace { margin:16px auto; padding:0 12px; width:100%; gap:16px; }
+      .card { padding:18px; } .preview-card { padding:0; }
+      .grid, .check-grid { grid-template-columns:1fr; }
+      .module-item { padding:12px 10px; gap:8px; }
+      .module-name { font-size:.85rem; overflow-wrap:anywhere; }
+      .btn-move { width:32px; height:36px; }
+      .bottom-actions { position:static; gap:10px; }
+      .preview-head, .preview-foot { padding:14px; }
+      .preview-foot { flex-wrap:wrap; gap:8px; }
+      .preview-foot .btn { flex:1; padding:10px; font-size:.85rem; }
+      #promptOutput { padding:16px; }
+      .intro-note { padding:16px; }
+    }
+</style>
 </head>
 <body>
-
 <header class="topbar">
-  <div class="brand">PromptLab v3 (Instructional Design)</div>
-  <div style="font-size: 0.85rem; color: #a5d2ef;">Generator Media Interaktif & PJJ</div>
+<div class="brand">PromptLab v4 · Media Pembelajaran</div>
+<div style="font-size: 0.85rem; color: #a5d2ef;">Materi • Aktivitas • Bukti Belajar</div>
 </header>
-
 <div class="workspace">
-  <form id="generatorForm">
-    
-    <!-- 1. PENGATURAN PLATFORM -->
-    <div class="card" style="margin-bottom: 24px;">
-      <h2 class="panel-title">1. Pengaturan Platform & Database</h2>
-      <div class="grid">
-        <div class="field">
-          <label for="platform">Platform Pembuatan AI</label>
-          <select id="platform" name="platform">
-            <option value="canva" selected>Canva Code</option>
-            <option value="gemini">Gemini Canvas</option>
-            <option value="other">AI Coding (Claude/ChatGPT)</option>
-          </select>
-        </div>
-        <div class="field">
-          <label for="publish">Target Publikasi</label>
-          <select id="publish" name="publish">
-            <option value="canva_site" selected>Canva Site</option>
-            <option value="github">GitHub Pages</option>
-            <option value="gsites">Google Sites</option>
-            <option value="gas">Google Apps Script</option>
-          </select>
-        </div>
-        <div class="field full">
-          <label for="database">Penyimpanan Data Siswa (Nilai & Identitas)</label>
-          <select id="database" name="database">
-            <option value="canva_sheet" selected>Koneksikan ke Canva Sheet</option>
-            <option value="google_sheet">Koneksikan ke Google Spreadsheet via API</option>
-            <option value="no">Tidak perlu (Simpan lokal browser)</option>
-          </select>
-          <p class="hint">Jika dikoneksikan, halaman Cover akan meminta Nama & Kelas siswa otomatis.</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- 2. KONTEKS PEMBELAJARAN -->
-    <div class="card" style="margin-bottom: 24px;">
-      <h2 class="panel-title">2. Konteks Pembelajaran & Sumber Materi</h2>
-      <div class="grid">
-        <div class="field"><label for="subject">Mata Pelajaran *</label><input type="text" id="subject" name="subject" value="IPAS" required></div>
-        <div class="field"><label for="topic">Topik / Materi Inti *</label><input type="text" id="topic" name="topic" required placeholder="Contoh: Energi Terbarukan"></div>
-        <div class="field">
-          <label for="level">Jenjang Sekolah</label>
-          <select id="level" name="level">
-            <option value="SD">SD</option>
-            <option value="SMP">SMP</option>
-            <option value="SMA">SMA</option>
-            <option value="SMK" selected>SMK</option>
-          </select>
-        </div>
-        <div class="field" id="vocationalField">
-          <label for="jurusan">Jurusan / Program Keahlian</label>
-          <input type="text" id="jurusan" name="jurusan" placeholder="Contoh: Agribisnis / TKJ">
-          <label for="contextualize" style="display:flex; align-items:center; gap:8px; margin-top:10px; font-weight:600; font-size:0.85rem; cursor:pointer;">
-            <input type="checkbox" id="contextualize" name="contextualize" checked style="width:16px; height:16px; accent-color:var(--blue);">
-            Kontekstualisasikan materi & contoh khusus untuk jurusan ini
-          </label>
-        </div>
-        <div class="field"><label for="classList">Daftar Pilihan Kelas (Dropdown)</label><input type="text" id="classList" name="classList" value="X-A, X-B, X-C"></div>
-        <div class="field"><label for="duration">Durasi Pembelajaran</label><input type="text" id="duration" name="duration" value="2 x 45 Menit"></div>
-        
-        <!-- SUMBER MATERI -->
-        <div class="field full" style="border-top: 1px dashed var(--line); padding-top: 16px; margin-top: 8px;">
-          <label for="sourceMode">Sumber Materi Acuan</label>
-          <select id="sourceMode" name="sourceMode">
-            <option value="ai">AI susun materi secara mandiri</option>
-            <option value="upload">Saya akan melampirkan / menempelkan dokumen materi</option>
-          </select>
-          
-          <div class="conditional-box" id="sourceFields" style="display:none;">
-            <div class="field">
-              <label for="sourceType">Format Dokumen Acuan</label>
-              <select id="sourceType" name="sourceType">
-                <option value="PDF">PDF</option>
-                <option value="Word (.docx)">Word (.docx)</option>
-                <option value="PowerPoint (PPT/PPTX)">PowerPoint (PPT/PPTX)</option>
-                <option value="Teks Materi">Teks Materi</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="sourceTreatment">Tindakan AI terhadap Sumber</label>
-              <select id="sourceTreatment" name="sourceTreatment">
-                <option value="Jadikan acuan utama yang ketat, jangan tambah konsep luar.">Gunakan sebagai acuan ketat</option>
-                <option value="Gunakan sebagai acuan dasar, dan boleh ditambah contoh relevan.">Gunakan acuan & lengkapi dengan contoh</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <div class="field full">
-          <label for="tpMode">Tujuan Pembelajaran</label>
-          <select id="tpMode" name="tpMode">
-            <option value="ai">AI susun otomatis (KKO + Objek + Kriteria)</option>
-            <option value="custom">Saya rumuskan TP sendiri (Spesifik)</option>
-          </select>
-          <textarea id="tpCustom" name="tpCustom" style="display:none; margin-top:10px;" placeholder="Tuliskan rumusan TP di sini..."></textarea>
-        </div>
-      </div>
-    </div>
-
-    <!-- 3. STRUKTUR & ALUR MPI -->
-    <div class="card" style="margin-bottom: 24px;">
-      <h2 class="panel-title">3. Alur Pengalaman Belajar (Instructional Flow)</h2>
-      <p class="hint" style="margin-bottom:16px;">Centang modul yang dipakai, dan atur urutan menggunakan panah (Terkunci di fasenya masing-masing).</p>
-      
-      <fieldset>
-        <!-- FASE 1: AWAL -->
-        <div class="phase-block">
-          <div class="phase-header">Struktur Inti MPI (Terkunci & Wajib)</div>
-          <ul class="module-list">
-            <li class="module-item"><input type="checkbox" class="module-check" checked disabled><span class="module-name">📄 Halaman Cover & Identitas</span></li>
-            <li class="module-item"><input type="checkbox" class="module-check" checked disabled><span class="module-name">🎯 Petunjuk Penggunaan & TP</span></li>
-            <li class="module-item"><input type="checkbox" class="module-check" checked disabled><span class="module-name">🏠 Menu Utama (Dashboard)</span></li>
-          </ul>
-        </div>
-
-        <!-- FASE 2: MEMAHAMI -->
-        <div class="phase-block">
-          <div class="phase-header">Fase 1: Memahami (Membangun Konsep)</div>
-          <ul class="module-list" id="listMemahami">
-            <li class="module-item"><input type="checkbox" class="module-check" checked><span class="module-name">Apersepsi / Pemantik</span><div class="module-actions"><button type="button" class="btn-move up">▲</button><button type="button" class="btn-move down">▼</button></div></li>
-            <li class="module-item"><input type="checkbox" class="module-check" checked><span class="module-name">Eksplorasi Materi Inti (Chunking)</span><div class="module-actions"><button type="button" class="btn-move up">▲</button><button type="button" class="btn-move down">▼</button></div></li>
-            <li class="module-item"><input type="checkbox" class="module-check" checked><span class="module-name">Contoh Kontekstual</span><div class="module-actions"><button type="button" class="btn-move up">▲</button><button type="button" class="btn-move down">▼</button></div></li>
-            <li class="module-item"><input type="checkbox" class="module-check" checked><span class="module-name">Infografis / Visual Konsep</span><div class="module-actions"><button type="button" class="btn-move up">▲</button><button type="button" class="btn-move down">▼</button></div></li>
-            <li class="module-item"><input type="checkbox" class="module-check" checked><span class="module-name">Cek Pemahaman Mikro</span><div class="module-actions"><button type="button" class="btn-move up">▲</button><button type="button" class="btn-move down">▼</button></div></li>
-          </ul>
-        </div>
-
-        <!-- FASE 3: MENGAPLIKASI -->
-        <div class="phase-block">
-          <div class="phase-header">Fase 2: Mengaplikasi (Aktivitas & Interaksi)</div>
-          <ul class="module-list" id="listMengaplikasi">
-            <li class="module-item"><input type="checkbox" class="module-check" checked><span class="module-name">Latihan Interaktif</span><div class="module-actions"><button type="button" class="btn-move up">▲</button><button type="button" class="btn-move down">▼</button></div></li>
-            <li class="module-item"><input type="checkbox" class="module-check" checked><span class="module-name">Studi Kasus Kontekstual</span><div class="module-actions"><button type="button" class="btn-move up">▲</button><button type="button" class="btn-move down">▼</button></div></li>
-            <li class="module-item"><input type="checkbox" class="module-check" checked><span class="module-name">Simulasi Interaktif</span><div class="module-actions"><button type="button" class="btn-move up">▲</button><button type="button" class="btn-move down">▼</button></div></li>
-            <li class="module-item" data-key="task"><input type="checkbox" class="module-check" checked><span class="module-name">Aktivitas Penyelidikan Mandiri / LKPD</span><div class="module-actions"><button type="button" class="btn-move up">▲</button><button type="button" class="btn-move down">▼</button></div></li>
-            <li class="module-item" data-key="game"><input type="checkbox" class="module-check" checked><span class="module-name">Game Edukatif</span><div class="module-actions"><button type="button" class="btn-move up">▲</button><button type="button" class="btn-move down">▼</button></div></li>
-          </ul>
-        </div>
-
-        <!-- FASE 4: MEREFLEKSI -->
-        <div class="phase-block">
-          <div class="phase-header">Fase 3: Merefleksi (Penilaian & Penarikan Makna)</div>
-          <ul class="module-list" id="listMerefleksi">
-            <li class="module-item"><input type="checkbox" class="module-check" checked><span class="module-name">Rangkuman Terstruktur</span><div class="module-actions"><button type="button" class="btn-move up">▲</button><button type="button" class="btn-move down">▼</button></div></li>
-            <li class="module-item"><input type="checkbox" class="module-check" checked><span class="module-name">Kuis Akhir Komprehensif</span><div class="module-actions"><button type="button" class="btn-move up">▲</button><button type="button" class="btn-move down">▼</button></div></li>
-            <li class="module-item"><input type="checkbox" class="module-check" checked><span class="module-name">Refleksi Siswa / Exit Ticket</span><div class="module-actions"><button type="button" class="btn-move up">▲</button><button type="button" class="btn-move down">▼</button></div></li>
-          </ul>
-        </div>
-      </fieldset>
-    </div>
-
-    <!-- 4. PENGATURAN AKTIVITAS & EVALUASI -->
-    <div class="card" style="margin-bottom: 24px;">
-      <h2 class="panel-title">4. Pengaturan Aktivitas & Asesmen</h2>
-      
-      <!-- Penyelidikan Mandiri -->
-      <div class="grid" style="border-bottom: 1px dashed var(--line); padding-bottom: 16px;">
-        <div class="field full">
-          <label for="taskMode">Model Aktivitas Penyelidikan Mandiri / LKPD</label>
-          <select id="taskMode" name="taskMode">
-            <option value="AI susun otomatis sesuai materi dan jurusan siswa">AI susun otomatis sesuai materi dan jurusan siswa</option>
-            <option value="Observasi alat / lingkungan nyata sekitar rumah">Observasi alat / lingkungan nyata sekitar rumah</option>
-            <option value="Eksperimen sederhana alat rumah/dapur">Eksperimen sederhana alat rumah/dapur</option>
-            <option value="Analisis kasus lingkungan / kejuruan lokal">Analisis kasus lingkungan / kejuruan lokal</option>
-            <option value="custom">Tentukan instruksi tugas sendiri...</option>
-          </select>
-          <textarea id="taskCustom" name="taskCustom" style="display:none; margin-top:10px;" placeholder="Tuliskan instruksi langkah kerja tugas mandiri di sini..."></textarea>
-        </div>
-      </div>
-
-      <!-- Game Edukatif -->
-      <div class="grid" style="border-bottom: 1px dashed var(--line); padding-bottom: 16px; margin-top: 16px;">
-        <div class="field full">
-          <label for="gameType">Jenis Game Edukatif</label>
-          <select id="gameType" name="gameType">
-            <option value="Game pesawat penembak meteor / jawaban salah">Game pesawat penembak meteor / jawaban salah</option>
-            <option value="Game pecah balon jawaban benar">Game pecah balon jawaban benar</option>
-            <option value="Game susun blok/kata">Game susun blok/kata</option>
-            <option value="AI pilihkan mekanika game yang cocok dengan materi">AI pilihkan mekanika yang cocok dengan materi</option>
-            <option value="custom">Tentukan mekanika game sendiri...</option>
-          </select>
-          <textarea id="gameCustom" name="gameCustom" style="display:none; margin-top:10px;" placeholder="Jelaskan aturan dan mekanika game di sini..."></textarea>
-          <p class="hint">Catatan: Jika database aktif dan tercentang, skor game akan otomatis dikirim ke tabel Leaderboard.</p>
-        </div>
-      </div>
-
-      <!-- Asesmen Kuis -->
-      <div class="grid" style="margin-top: 16px; margin-bottom: 0;">
-        <div class="field"><label for="subCount">Jumlah soal formatif tiap submateri</label><input type="number" id="subCount" name="subCount" value="3" min="1" max="50"></div>
-        <div class="field"><label for="finalCount">Jumlah soal kuis akhir komprehensif</label><input type="number" id="finalCount" name="finalCount" value="10" min="1" max="50"></div>
-        <div class="field full">
-          <label for="blueprint">Distribusi Kognitif Soal (Blueprint Asesmen)</label>
-          <select id="blueprint" name="blueprint">
-            <option value="Seimbang: 30% Pemahaman Konsep (C2), 40% Penerapan Kasus (C3), 30% Analisis/HOTS (C4-C5)">Seimbang: 30% Pemahaman Konsep (C2), 40% Penerapan Kasus (C3), 30% Analisis/HOTS (C4-C5)</option>
-            <option value="Dominan Penerapan: 20% C2, 60% C3, 20% C4">Dominan Penerapan: 20% C2, 60% C3, 20% C4</option>
-            <option value="Dominan HOTS: 20% C2, 30% C3, 50% HOTS">Dominan HOTS: 20% C2, 30% C3, 50% HOTS</option>
-          </select>
-        </div>
-        <fieldset class="field full">
-          <legend class="legend-title">Bentuk variasi interaksi soal (Pilih yang diizinkan)</legend>
-          <div class="check-grid">
-            <label><input type="checkbox" name="qType" value="Pilihan ganda kontekstual" checked> Pilihan ganda kontekstual</label>
-            <label><input type="checkbox" name="qType" value="Mengurutkan proses" checked> Mengurutkan proses</label>
-            <label><input type="checkbox" name="qType" value="Drag & drop klasifikasi" checked> Drag & drop klasifikasi</label>
-            <label><input type="checkbox" name="qType" value="Menjodohkan konsep" checked> Menjodohkan konsep</label>
-            <label><input type="checkbox" name="qType" value="Benar / salah disertai alasan" checked> Benar / salah disertai alasan</label>
-          </div>
-          <p class="hint" style="margin-top:10px;">💡 Setiap butir soal harus memiliki metadata internal (TP, level kognitif, kunci, & umpan balik yang menjelaskan mengapa jawaban tepat).</p>
-        </fieldset>
-      </div>
-    </div>
-    
-    <!-- 5. MEDIA VISUAL & AUDIO -->
-    <div class="card" style="margin-bottom: 24px;">
-      <h2 class="panel-title">5. Tampilan Visual & Audio</h2>
-      <div class="grid" style="margin-bottom: 0;">
-        <div class="field">
-          <label for="mediaImages">Ilustrasi / Gambar</label>
-          <select id="mediaImages" name="mediaImages">
-            <option value="Foto Unsplash (Wajib ada fallback SVG jika gagal muat)">Foto Unsplash (+ Fallback SVG otomatis)</option>
-            <option value="Murni SVG Vektor / Ikon Inline">Hanya SVG Inline / Vektor Murni</option>
-          </select>
-        </div>
-        <div class="field">
-          <label for="mediaAudio">Efek Suara (Audio)</label>
-          <select id="mediaAudio" name="mediaAudio">
-            <option value="Gunakan Web Audio API (Osilator murni) untuk suara interaksi.">Web Audio API Sintetis (Pasti Bunyi)</option>
-            <option value="Tanpa efek suara sama sekali.">Tanpa Suara</option>
-          </select>
-        </div>
-        <div class="field full">
-          <label for="mediaStyle">Gaya Tampilan (UI Style)</label>
-          <select id="mediaStyle" name="mediaStyle">
-            <option value="Profesional, modern, bersih">Profesional, Modern & Bersih</option>
-            <option value="Ceria, berwarna, ramah anak">Ceria & Berwarna</option>
-            <option value="Gaya papan tulis (chalkboard)">Papan Tulis (Chalkboard)</option>
-            <option value="AI sesuaikan dengan tingkat usia">AI Sesuaikan dengan usia siswa</option>
-          </select>
-        </div>
-      </div>
-    </div>
-
-    <!-- 6. MODE GURU & KEAMANAN -->
-    <div class="card">
-      <h2 class="panel-title">6. Mode Guru (Teacher View)</h2>
-      <p class="hint" style="margin-bottom:16px;">Mode ini menambahkan ikon 👨‍🏫 di halaman cover untuk membuka kunci jawaban, rubrik, dan metadata.</p>
-      <div class="grid" style="margin-bottom: 0;">
-        <div class="field">
-          <label for="teacherMode">Status Mode Guru</label>
-          <select id="teacherMode" name="teacherMode"><option value="yes">Aktifkan</option><option value="no">Nonaktifkan</option></select>
-        </div>
-        <div class="field">
-          <label for="teacherPass">Password / PIN Akses</label>
-          <input type="text" id="teacherPass" name="teacherPass" value="123456">
-        </div>
-        <p class="hint full" style="color:var(--danger)">Peringatan: Pada HTML statis (tanpa backend kuat), password ini hanya berfungsi sebagai pengunci antarmuka (UI locker) untuk mencegah siswa melihat jawaban secara tidak sengaja, bukan sistem keamanan enkripsi data tingkat tinggi.</p>
-      </div>
-    </div>
-
-    <div class="bottom-actions">
-      <button type="submit" class="btn btn-primary" style="flex:1; justify-content:center; font-size:1.1rem;">⚡ Bangun Prompt ID 3-Lapis</button>
-      <button type="button" class="btn btn-outline" id="btnReset">Reset Formulir</button>
-    </div>
-  </form>
-
-  <aside class="preview-card card">
-    <div class="preview-head">
-      <h2>Prompt Pembelajaran Anda</h2>
-      <div style="font-size: 0.8rem; color: #a5d2ef; margin-top:4px;" id="tokenCount">Belum digenerate</div>
-    </div>
-    <textarea id="promptOutput" placeholder="Prompt berstandar Instructional Design 3-Lapis akan dirangkai di sini..."></textarea>
-    <div class="preview-foot">
-      <button type="button" class="btn btn-secondary" id="btnCopy">📋 Salin Prompt</button>
-      <button type="button" class="btn btn-outline" id="btnDownload">💾 Unduh TXT</button>
-    </div>
-  </aside>
+<form id="generatorForm" novalidate=""><div class="intro-note"><strong>Rancang media yang membantu siswa benar-benar belajar.</strong><p>Isi konteks, pilih aktivitas, lalu salin prompt ke Canva atau platform pilihan. Aturan kedalaman materi, bukti pemahaman, dan perbaikan jawaban disertakan otomatis. Jika memakai sumber, lampirkan juga sumbernya di platform tujuan.</p></div>
+<!-- 1. PENGATURAN PLATFORM -->
+<div class="card" style="margin-bottom: 24px;">
+<h2 class="panel-title">1. Pengaturan Platform &amp; Database</h2>
+<div class="grid">
+<div class="field">
+<label for="platform">Platform Pembuatan AI</label>
+<select id="platform" name="platform">
+<option selected="" value="canva">Canva Code</option>
+<option value="gemini">Gemini Canvas</option>
+<option value="other">AI Coding (Claude/ChatGPT)</option>
+</select>
 </div>
-
-<script>
-(() => {
+<div class="field">
+<label for="publish">Target Publikasi</label>
+<select id="publish" name="publish">
+<option selected="" value="canva_site">Canva Site</option>
+<option value="github">GitHub Pages</option>
+<option value="gsites">Google Sites</option>
+<option value="gas">Google Apps Script</option>
+</select>
+</div>
+<div class="field full">
+<label for="database">Penyimpanan Data Siswa (Nilai &amp; Identitas)</label>
+<select id="database" name="database">
+<option selected="" value="canva_sheet">Koneksikan ke Canva Sheet</option>
+<option value="google_sheet">Koneksikan ke Google Spreadsheet via API</option>
+<option value="no">Tidak perlu (Simpan lokal browser)</option>
+</select>
+<p class="hint">Pilih tempat penyimpanan hasil siswa. Prompt meminta status koneksi yang jujur dan penyimpanan lokal jika layanan belum tersedia.</p>
+</div>
+</div>
+</div>
+<!-- 2. KONTEKS PEMBELAJARAN -->
+<div class="card" style="margin-bottom: 24px;">
+<h2 class="panel-title">2. Konteks Pembelajaran &amp; Sumber Materi</h2>
+<div class="grid">
+<div class="field"><label for="subject">Mata Pelajaran *</label><input id="subject" name="subject" required="" type="text" value="IPAS"/></div>
+<div class="field"><label for="topic">Topik / Materi Inti *</label><input id="topic" name="topic" placeholder="Contoh: Energi Terbarukan" required="" type="text"/></div>
+<div class="field">
+<label for="level">Jenjang Sekolah</label>
+<select id="level" name="level">
+<option value="SD">SD</option>
+<option value="SMP">SMP</option>
+<option value="SMA">SMA</option>
+<option selected="" value="SMK">SMK</option>
+</select>
+</div>
+<div class="field" id="vocationalField">
+<label for="jurusan">Jurusan / Program Keahlian</label>
+<input id="jurusan" name="jurusan" placeholder="Contoh: Agribisnis / TKJ" type="text"/>
+<label for="contextualize" style="display:flex; align-items:center; gap:8px; margin-top:10px; font-weight:600; font-size:0.85rem; cursor:pointer;">
+<input checked="" id="contextualize" name="contextualize" style="width:16px; height:16px; accent-color:var(--blue);" type="checkbox"/>
+            Kontekstualisasikan materi &amp; contoh khusus untuk jurusan ini
+          </label>
+</div>
+<div class="field"><label for="classList">Daftar Pilihan Kelas (Dropdown)</label><input id="classList" name="classList" required="" type="text" value="X-A, X-B, X-C"/></div>
+<div class="field"><label for="duration">Durasi Pembelajaran</label><input aria-describedby="durationHint" id="duration" name="duration" required="" type="text" value="2 x 45 Menit"/><p class="hint" id="durationHint"></p></div><div class="field full"><label for="studyMode">Cara Media Digunakan</label><select id="studyMode" name="studyMode"><option value="mandiri">Belajar mandiri / PJJ</option><option value="terpandu">Didampingi guru di kelas</option></select><p class="hint">Mode mandiri meminta penjelasan, contoh, dan bantuan yang cukup tanpa penjelasan lisan guru.</p></div><div class="field full"><details class="profile-details"><summary>Catatan kemampuan awal siswa (opsional)</summary><label for="learnerProfile" style="margin-top:12px">Hal yang sudah dikuasai atau sering menyulitkan siswa</label><textarea id="learnerProfile" name="learnerProfile" placeholder="Contoh: sudah mengenal pecahan, tetapi masih kesulitan membandingkan pecahan berbeda penyebut."></textarea><p class="hint">Boleh dikosongkan. AI akan menyiapkan pemeriksaan prasyarat sederhana.</p></details></div>
+<!-- SUMBER MATERI -->
+<div class="field full" style="border-top: 1px dashed var(--line); padding-top: 16px; margin-top: 8px;">
+<label for="sourceMode">Sumber Materi Acuan</label>
+<select id="sourceMode" name="sourceMode">
+<option value="ai">AI susun materi secara mandiri</option>
+<option value="upload">Saya akan melampirkan / menempelkan dokumen materi</option>
+</select>
+<div class="conditional-box" id="sourceFields" style="display:none;">
+<div class="field">
+<label for="sourceType">Format Dokumen Acuan</label>
+<select id="sourceType" name="sourceType">
+<option value="PDF">PDF</option>
+<option value="Word (.docx)">Word (.docx)</option>
+<option value="PowerPoint (PPT/PPTX)">PowerPoint (PPT/PPTX)</option>
+<option value="Teks Materi">Teks Materi</option>
+</select>
+</div>
+<div class="field">
+<label for="sourceTreatment">Penggunaan Sumber</label>
+<select id="sourceTreatment" name="sourceTreatment">
+<option value="Pertahankan cakupan konsep sumber. Boleh menguraikan penjelasan, contoh, dan latihan dari konsep tersebut agar dapat dipelajari mandiri; jangan menambah topik di luar cakupan tanpa persetujuan guru">Pertahankan cakupan, perdalam penjelasan</option>
+<option value="Gunakan sebagai acuan utama; lengkapi penjelasan, contoh, latihan, dan pengayaan relevan seperlunya. Bedakan pengayaan dari sumber dan jaga agar sesuai TP serta durasi">Gunakan sumber + pengayaan relevan</option>
+</select>
+</div>
+</div>
+</div>
+<div class="field full">
+<label for="tpMode">Tujuan Pembelajaran</label>
+<select id="tpMode" name="tpMode">
+<option value="ai">AI usulkan TP dan kriteria keberhasilan</option>
+<option value="custom">Saya rumuskan TP sendiri (Spesifik)</option>
+</select>
+<textarea id="tpCustom" name="tpCustom" placeholder="Tuliskan rumusan TP di sini..." style="display:none; margin-top:10px;"></textarea>
+</div>
+</div>
+</div>
+<!-- 3. STRUKTUR & ALUR MPI -->
+<div class="card" style="margin-bottom: 24px;">
+<h2 class="panel-title">3. Alur Pengalaman Belajar</h2>
+<p class="hint" style="margin-bottom:16px;">Pilih komponen dan atur urutannya di dalam fase. Materi inti tetap wajib; contoh, latihan minimum, dan umpan balik selalu terintegrasi. Game dan simulasi bisa ditambahkan sesuai kebutuhan.</p>
+<fieldset>
+<!-- FASE 1: AWAL -->
+<div class="phase-block">
+<div class="phase-header">Struktur Inti MPI (Terkunci &amp; Wajib)</div>
+<ul class="module-list">
+<li class="module-item"><input checked="" class="module-check" disabled="" type="checkbox"/><span class="module-name">📄 Halaman Cover &amp; Identitas</span></li>
+<li class="module-item"><input checked="" class="module-check" disabled="" type="checkbox"/><span class="module-name">🎯 Petunjuk Penggunaan &amp; TP</span></li>
+<li class="module-item"><input checked="" class="module-check" disabled="" type="checkbox"/><span class="module-name">🏠 Menu Utama (Dashboard)</span></li>
+</ul>
+</div>
+<!-- FASE 2: MEMAHAMI -->
+<div class="phase-block">
+<div class="phase-header">Fase 1: Memahami (Membangun Konsep)</div>
+<ul class="module-list" id="listMemahami">
+<li class="module-item" data-key="trigger"><input aria-labelledby="name-trigger" checked="" class="module-check" type="checkbox"/><span class="module-name" id="name-trigger">Apersepsi / Pemantik</span><div class="module-actions"><button aria-label="Naikkan Apersepsi / Pemantik" class="btn-move up" type="button">▲</button><button aria-label="Turunkan Apersepsi / Pemantik" class="btn-move down" type="button">▼</button></div></li>
+<li class="module-item" data-key="material"><input aria-labelledby="name-material" checked="" class="module-check" disabled="" type="checkbox"/><span class="module-name" id="name-material">Materi Inti &amp; Siklus Belajar (Wajib)</span><div class="module-actions"><button aria-label="Naikkan Eksplorasi Materi Inti (Chunking)" class="btn-move up" type="button">▲</button><button aria-label="Turunkan Eksplorasi Materi Inti (Chunking)" class="btn-move down" type="button">▼</button></div></li>
+<li class="module-item" data-key="example"><input aria-labelledby="name-example" checked="" class="module-check" type="checkbox"/><span class="module-name" id="name-example">Contoh Kontekstual</span><div class="module-actions"><button aria-label="Naikkan Contoh Kontekstual" class="btn-move up" type="button">▲</button><button aria-label="Turunkan Contoh Kontekstual" class="btn-move down" type="button">▼</button></div></li>
+<li class="module-item" data-key="visual"><input aria-labelledby="name-visual" checked="" class="module-check" type="checkbox"/><span class="module-name" id="name-visual">Infografis / Visual Konsep</span><div class="module-actions"><button aria-label="Naikkan Infografis / Visual Konsep" class="btn-move up" type="button">▲</button><button aria-label="Turunkan Infografis / Visual Konsep" class="btn-move down" type="button">▼</button></div></li>
+<li class="module-item" data-key="micro"><input aria-labelledby="name-micro" checked="" class="module-check" type="checkbox"/><span class="module-name" id="name-micro">Cek Pemahaman Mikro</span><div class="module-actions"><button aria-label="Naikkan Cek Pemahaman Mikro" class="btn-move up" type="button">▲</button><button aria-label="Turunkan Cek Pemahaman Mikro" class="btn-move down" type="button">▼</button></div></li>
+</ul>
+</div>
+<!-- FASE 3: MENGAPLIKASI -->
+<div class="phase-block">
+<div class="phase-header">Fase 2: Mengaplikasi (Aktivitas &amp; Interaksi)</div>
+<ul class="module-list" id="listMengaplikasi">
+<li class="module-item" data-key="practice"><input aria-labelledby="name-practice" checked="" class="module-check" type="checkbox"/><span class="module-name" id="name-practice">Latihan Interaktif</span><div class="module-actions"><button aria-label="Naikkan Latihan Interaktif" class="btn-move up" type="button">▲</button><button aria-label="Turunkan Latihan Interaktif" class="btn-move down" type="button">▼</button></div></li>
+<li class="module-item" data-key="case"><input aria-labelledby="name-case" checked="" class="module-check" type="checkbox"/><span class="module-name" id="name-case">Studi Kasus Kontekstual</span><div class="module-actions"><button aria-label="Naikkan Studi Kasus Kontekstual" class="btn-move up" type="button">▲</button><button aria-label="Turunkan Studi Kasus Kontekstual" class="btn-move down" type="button">▼</button></div></li>
+<li class="module-item" data-key="simulation"><input aria-labelledby="name-simulation" class="module-check" type="checkbox"/><span class="module-name" id="name-simulation">Simulasi Interaktif</span><div class="module-actions"><button aria-label="Naikkan Simulasi Interaktif" class="btn-move up" type="button">▲</button><button aria-label="Turunkan Simulasi Interaktif" class="btn-move down" type="button">▼</button></div></li>
+<li class="module-item" data-key="task"><input aria-labelledby="name-task" checked="" class="module-check" type="checkbox"/><span class="module-name" id="name-task">Aktivitas Penyelidikan Mandiri / LKPD</span><div class="module-actions"><button aria-label="Naikkan Aktivitas Penyelidikan Mandiri / LKPD" class="btn-move up" type="button">▲</button><button aria-label="Turunkan Aktivitas Penyelidikan Mandiri / LKPD" class="btn-move down" type="button">▼</button></div></li>
+<li class="module-item" data-key="game"><input aria-labelledby="name-game" class="module-check" type="checkbox"/><span class="module-name" id="name-game">Game Edukatif</span><div class="module-actions"><button aria-label="Naikkan Game Edukatif" class="btn-move up" type="button">▲</button><button aria-label="Turunkan Game Edukatif" class="btn-move down" type="button">▼</button></div></li>
+</ul>
+</div>
+<!-- FASE 4: MEREFLEKSI -->
+<div class="phase-block">
+<div class="phase-header">Fase 3: Merefleksi (Penilaian &amp; Penarikan Makna)</div>
+<ul class="module-list" id="listMerefleksi">
+<li class="module-item" data-key="summary"><input aria-labelledby="name-summary" checked="" class="module-check" type="checkbox"/><span class="module-name" id="name-summary">Rangkuman Terstruktur</span><div class="module-actions"><button aria-label="Naikkan Rangkuman Terstruktur" class="btn-move up" type="button">▲</button><button aria-label="Turunkan Rangkuman Terstruktur" class="btn-move down" type="button">▼</button></div></li>
+<li class="module-item" data-key="final"><input aria-labelledby="name-final" checked="" class="module-check" type="checkbox"/><span class="module-name" id="name-final">Asesmen Akhir Sesi</span><div class="module-actions"><button aria-label="Naikkan Kuis Akhir Komprehensif" class="btn-move up" type="button">▲</button><button aria-label="Turunkan Kuis Akhir Komprehensif" class="btn-move down" type="button">▼</button></div></li>
+<li class="module-item" data-key="reflection"><input aria-labelledby="name-reflection" checked="" class="module-check" type="checkbox"/><span class="module-name" id="name-reflection">Refleksi Siswa / Exit Ticket</span><div class="module-actions"><button aria-label="Naikkan Refleksi Siswa / Exit Ticket" class="btn-move up" type="button">▲</button><button aria-label="Turunkan Refleksi Siswa / Exit Ticket" class="btn-move down" type="button">▼</button></div></li>
+</ul>
+</div>
+</fieldset>
+</div>
+<!-- 4. PENGATURAN AKTIVITAS & EVALUASI -->
+<div class="card" style="margin-bottom: 24px;">
+<h2 class="panel-title">4. Pengaturan Aktivitas &amp; Asesmen</h2>
+<!-- Penyelidikan Mandiri -->
+<div class="grid" style="border-bottom: 1px dashed var(--line); padding-bottom: 16px;">
+<div class="field full">
+<label for="taskMode">Model Aktivitas Penyelidikan Mandiri / LKPD</label>
+<select id="taskMode" name="taskMode">
+<option value="AI pilih aktivitas sesuai TP, materi, usia siswa, serta konteks kejuruan hanya jika diaktifkan">AI pilih aktivitas sesuai TP, materi, dan usia siswa</option>
+<option value="Observasi alat / lingkungan nyata sekitar rumah">Observasi alat / lingkungan nyata sekitar rumah</option>
+<option value="Eksperimen sederhana alat rumah/dapur">Eksperimen sederhana alat rumah/dapur</option>
+<option value="Analisis kasus lingkungan / kejuruan lokal">Analisis kasus lingkungan / kejuruan lokal</option>
+<option value="custom">Tentukan instruksi tugas sendiri...</option>
+</select>
+<textarea id="taskCustom" name="taskCustom" placeholder="Tuliskan instruksi langkah kerja tugas mandiri di sini..." style="display:none; margin-top:10px;"></textarea>
+</div>
+</div>
+<!-- Game Edukatif -->
+<div class="grid" style="border-bottom: 1px dashed var(--line); padding-bottom: 16px; margin-top: 16px;">
+<div class="field full">
+<label for="gameType">Jenis Game Edukatif</label>
+<select id="gameType" name="gameType">
+<option value="Game pesawat penembak meteor / jawaban salah">Game pesawat penembak meteor / jawaban salah</option>
+<option value="Game pecah balon jawaban benar">Game pecah balon jawaban benar</option>
+<option value="Game susun blok/kata">Game susun blok/kata</option>
+<option selected="" value="AI pilihkan mekanika game yang cocok dengan materi">AI pilihkan mekanika yang cocok dengan materi</option>
+<option value="custom">Tentukan mekanika game sendiri...</option>
+</select>
+<textarea id="gameCustom" name="gameCustom" placeholder="Jelaskan aturan dan mekanika game di sini..." style="display:none; margin-top:10px;"></textarea>
+<p class="hint">Jika game dipilih, prompt meminta alasan edukatif dan refleksi setelah bermain. Leaderboard hanya ditampilkan dari data nyata saat penyimpanan terhubung.</p>
+</div>
+</div>
+<!-- Asesmen Kuis -->
+<div class="grid" style="margin-top: 16px; margin-bottom: 0;">
+<div class="field"><label for="subCount">Soal cek pemahaman per submateri</label><input id="subCount" max="50" min="1" name="subCount" type="number" value="3"/></div>
+<div class="field"><label for="finalCount">Soal asesmen akhir sesi</label><input id="finalCount" max="50" min="1" name="finalCount" type="number" value="10"/></div>
+<div class="field full">
+<label for="blueprint">Distribusi Kognitif Soal (Blueprint Asesmen)</label>
+<select id="blueprint" name="blueprint"><option selected="" value="AI tentukan distribusi sesuai tuntutan TP dan kesiapan siswa; tidak perlu memaksakan persentase C2–C5 yang sama untuk semua mapel">AI sesuaikan dengan TP (disarankan)</option>
+<option value="Seimbang: 30% Pemahaman Konsep (C2), 40% Penerapan Kasus (C3), 30% Analisis/HOTS (C4-C5)">Seimbang: 30% Pemahaman Konsep (C2), 40% Penerapan Kasus (C3), 30% Analisis/HOTS (C4-C5)</option>
+<option value="Dominan Penerapan: 20% C2, 60% C3, 20% C4">Dominan Penerapan: 20% C2, 60% C3, 20% C4</option>
+<option value="Dominan HOTS: 20% C2, 30% C3, 50% HOTS">Dominan HOTS: 20% C2, 30% C3, 50% HOTS</option>
+</select>
+</div>
+<fieldset class="field full">
+<legend class="legend-title">Bentuk variasi interaksi soal (Pilih yang diizinkan)</legend>
+<div class="check-grid">
+<label><input checked="" name="qType" type="checkbox" value="Pilihan ganda kontekstual"/> Pilihan ganda kontekstual</label>
+<label><input checked="" name="qType" type="checkbox" value="Mengurutkan proses"/> Mengurutkan proses</label>
+<label><input checked="" name="qType" type="checkbox" value="Drag &amp; drop klasifikasi"/> Drag &amp; drop klasifikasi</label>
+<label><input checked="" name="qType" type="checkbox" value="Menjodohkan konsep"/> Menjodohkan konsep</label>
+<label><input checked="" name="qType" type="checkbox" value="Benar / salah disertai alasan"/> Benar / salah disertai alasan</label>
+<label><input checked="" name="qType" type="checkbox" value="Jawaban singkat dengan rubrik/pemeriksaan mandiri"/> Jawaban singkat beralasan</label></div>
+<p class="hint" style="margin-top:10px;">Bentuk dipilih sesuai materi; tidak harus semuanya dipakai. Prompt meminta pengecoh masuk akal, rubrik jawaban terbuka, dan tindak lanjut per TP.</p>
+</fieldset>
+</div>
+</div>
+<!-- 5. MEDIA VISUAL & AUDIO -->
+<div class="card" style="margin-bottom: 24px;">
+<h2 class="panel-title">5. Tampilan Visual &amp; Audio</h2>
+<div class="grid" style="margin-bottom: 0;">
+<div class="field">
+<label for="mediaImages">Ilustrasi / Gambar</label>
+<select id="mediaImages" name="mediaImages">
+<option value="Foto Unsplash (Wajib ada fallback SVG jika gagal muat)">Foto Unsplash (+ Fallback SVG otomatis)</option>
+<option value="Murni SVG Vektor / Ikon Inline">Hanya SVG Inline / Vektor Murni</option>
+</select>
+</div>
+<div class="field">
+<label for="mediaAudio">Efek Suara (Audio)</label>
+<select id="mediaAudio" name="mediaAudio">
+<option value="Gunakan Web Audio API (Osilator murni) untuk suara interaksi.">Efek suara sintetis (dengan mute)</option>
+<option value="Tanpa efek suara sama sekali.">Tanpa Suara</option>
+</select>
+</div>
+<div class="field full">
+<label for="mediaStyle">Gaya Tampilan (UI Style)</label>
+<select id="mediaStyle" name="mediaStyle">
+<option value="Profesional, modern, bersih">Profesional, Modern &amp; Bersih</option>
+<option value="Ceria, berwarna, ramah anak">Ceria &amp; Berwarna</option>
+<option value="Gaya papan tulis (chalkboard)">Papan Tulis (Chalkboard)</option>
+<option value="AI sesuaikan dengan tingkat usia">AI Sesuaikan dengan usia siswa</option>
+</select>
+</div>
+</div>
+</div>
+<!-- 6. MODE GURU & KEAMANAN -->
+<div class="card">
+<h2 class="panel-title">6. Mode Guru (Teacher View)</h2>
+<p class="hint" style="margin-bottom:16px;">Panel guru memuat peta TP, alokasi waktu, kunci, dan rubrik. Kriteria keberhasilan untuk siswa tetap tersedia tanpa PIN. PIN tidak disimpan dalam draf generator.</p>
+<div class="grid" style="margin-bottom: 0;">
+<div class="field">
+<label for="teacherMode">Status Mode Guru</label>
+<select id="teacherMode" name="teacherMode"><option value="yes">Aktifkan</option><option value="no">Nonaktifkan</option></select>
+</div>
+<div class="field">
+<label for="teacherPass">Password / PIN Akses</label>
+<input autocomplete="off" id="teacherPass" name="teacherPass" type="password" value="123456"/>
+</div>
+<p class="hint full" style="color:var(--danger)">Peringatan: Pada HTML statis (tanpa backend kuat), password ini hanya berfungsi sebagai pengunci antarmuka (UI locker) untuk mencegah siswa melihat jawaban secara tidak sengaja, bukan sistem keamanan enkripsi data tingkat tinggi.</p>
+</div>
+</div>
+<p aria-live="polite" class="hint" id="formStatus" role="status">Isian disimpan pada perangkat ini jika browser mengizinkan. PIN guru tidak disimpan.</p><div class="bottom-actions">
+<button class="btn btn-primary" style="flex:1; justify-content:center; font-size:1.1rem;" type="submit">⚡ Buat Prompt Pembelajaran</button>
+<button class="btn btn-outline" id="btnReset" type="button">Reset Formulir</button>
+</div>
+</form>
+<aside class="preview-card card">
+<div class="preview-head">
+<h2>Prompt Pembelajaran Anda</h2>
+<div aria-live="polite" id="tokenCount" style="font-size: 0.8rem; color: #a5d2ef; margin-top:4px;">Belum dibuat</div>
+</div>
+<textarea aria-label="Hasil prompt pembelajaran" id="promptOutput" placeholder="Prompt lengkap akan muncul di sini. Isi mapel dan topik, sesuaikan pilihan, lalu klik Buat Prompt Pembelajaran."></textarea>
+<div class="preview-foot">
+<button class="btn btn-secondary" id="btnCopy" type="button">📋 Salin Prompt</button>
+<button class="btn btn-outline" id="btnDownload" type="button">💾 Unduh TXT</button>
+</div>
+</aside>
+</div>
+<script>(() => {
+  'use strict';
   const $ = id => document.getElementById(id);
   const form = $('generatorForm');
-  
-  // Save initial HTML states for clean reset
-  const initialModules = {
-    memahami: $('listMemahami').innerHTML,
-    mengaplikasi: $('listMengaplikasi').innerHTML,
-    merefleksi: $('listMerefleksi').innerHTML
+  const val = id => $(id).value.trim();
+  const lists = ['listMemahami', 'listMengaplikasi', 'listMerefleksi'];
+  const DRAFT_KEY = 'promptlab_v4_pedagogis_draft';
+  let dirty = false;
+  let copyTimer;
+  const definitions = {
+    trigger: 'Munculkan kasus, fenomena, atau pertanyaan diagnostik yang mengaktifkan pengetahuan awal. Siswa membuat prediksi/jawaban singkat sebelum penjelasan, lalu meninjau kembali jawaban itu setelah belajar. Jangan menilai prediksi awal sebagai nilai akhir.',
+    material: 'Susun unit konsep sesuai cakupan TP, bukan batas jumlah kartu. Tiap unit berisi penjelasan apa dan mengapa/bagaimana, contoh beralasan, pembanding atau miskonsepsi relevan, latihan kecil, dan pembahasan. Tampilkan bertahap tanpa menghilangkan kedalaman. Jangan hanya menyalin rangkuman atau daftar istilah.',
+    example: 'Berikan contoh kontekstual dengan proses berpikir yang terlihat: informasi penting → konsep yang dipakai → alasan → kesimpulan. Lanjutkan contoh sebagian terbimbing dan kasus baru untuk dicoba mandiri; kurangi bantuan bertahap.',
+    visual: 'Gunakan visual untuk menjelaskan hubungan, proses, perbandingan, atau perubahan yang memang diperlukan materi. Sertakan keterangan dan pertanyaan membaca visual. Ikon dan foto dekoratif tidak menggantikan penjelasan konsep.',
+    micro: 'Letakkan cek pemahaman di setiap unit konsep, bukan satu kumpulan kecil untuk seluruh materi. Periksa konsep dan miskonsepsi yang baru dipelajari; beri bantuan spesifik, kesempatan memperbaiki, serta satu butir setara bila diperlukan.',
+    practice: 'Bangun latihan dari terbimbing ke mandiri. Minta siswa memakai konsep, menunjukkan alasan atau bukti, dan memperbaiki jawaban setelah umpan balik. Gunakan kasus/data yang belum persis sama dengan contoh.',
+    case: 'Sediakan stimulus dengan informasi cukup, pertanyaan yang menghubungkan bukti dengan konsep, dan beberapa pilihan yang masuk akal bila memakai pilihan ganda. Siswa menyimpulkan atau mengambil keputusan dengan alasan; tampilkan contoh analisis setelah upaya siswa.',
+    simulation: 'Simulasi harus mewakili hubungan dalam materi: siswa memprediksi → mengubah variabel/pilihan → mengamati hasil → menjelaskan → menguji kembali. Jelaskan batas model dan jangan mengarang ketepatan ilmiah. Jika topik tidak cocok, gunakan skenario keputusan bercabang dengan tujuan yang sama.',
+    task: 'Buat tugas dengan tujuan terkait TP, alat/bahan yang terjangkau, langkah kerja, format hasil, kriteria keberhasilan, bantuan bertahap, dan perkiraan waktu. Sesuaikan siklus: prediksi/pertanyaan → kumpulkan bukti → analisis → kesimpulan → tindakan/perbaikan. Bukti dapat berupa teks, data, perhitungan, karya, atau pengamatan sesuai mapel. Sediakan alternatif data kasus bagi siswa yang tidak memiliki alat/akses atau tidak ingin memakai data pribadi. Jangan mewajibkan akun media sosial atau unggahan publik.',
+    game: 'Mekanika game harus melatih satu atau lebih TP. Jelaskan aturan, keputusan belajar, alasan jawaban, kondisi selesai, dan kesempatan belajar dari kesalahan. Pisahkan skor permainan dari penguasaan TP; kecepatan klik tidak boleh menjadi bukti utama pemahaman. Jangan mengandalkan warna untuk membocorkan kunci. Setelah bermain, siswa menjelaskan strategi/konsep yang digunakan.',
+    summary: 'Sebelum membuka rangkuman, minta siswa mengingat atau menjelaskan kembali ide utama secara singkat. Sajikan rangkuman hubungan konsep, contoh kunci, dan miskonsepsi; tautkan ke unit yang perlu dipelajari ulang.',
+    final: 'Kuis akhir memakai stimulus baru yang setara dengan yang dipelajari, memetakan semua TP yang sesuai untuk tes, dan memberikan hasil per TP. Tugas kinerja/jawaban terbuka tetap menjadi bukti bagi TP yang tidak cukup diukur pilihan ganda. Sebut sebagai asesmen akhir sesi; jangan otomatis menyebut sumatif tanpa tujuan penilaian yang jelas.',
+    reflection: 'Gunakan refleksi spesifik: pemikiran awal saya …; setelah melihat bukti … saya memperbaikinya menjadi …; bagian yang masih sulit …; langkah berikutnya …. Hubungkan dengan jawaban/hasil kerja nyata, bukan hanya perasaan senang. Jangan memberi nilai benar/salah pada perasaan pribadi.'
   };
-  
-  // Toggle Logic
-  $('level').addEventListener('change', e => {
-    $('vocationalField').style.display = e.target.value === 'SMK' ? 'block' : 'none';
-  });
-  
-  $('sourceMode').addEventListener('change', e => {
-    $('sourceFields').style.display = e.target.value === 'upload' ? 'grid' : 'none';
-  });
+  const selected = key => !!document.querySelector(`[data-key="${key}"] .module-check:checked`);
+  const initialOrders = Object.fromEntries(lists.map(id => [id, [...$(id).children].map(li => li.dataset.key)]));
 
-  $('tpMode').addEventListener('change', e => {
-    $('tpCustom').style.display = e.target.value === 'custom' ? 'block' : 'none';
-  });
-
-  $('taskMode').addEventListener('change', e => {
-    $('taskCustom').style.display = e.target.value === 'custom' ? 'block' : 'none';
-  });
-
-  $('gameType').addEventListener('change', e => {
-    $('gameCustom').style.display = e.target.value === 'custom' ? 'block' : 'none';
-  });
-
-  $('teacherMode').addEventListener('change', e => {
-    $('teacherPass').disabled = e.target.value === 'no';
-  });
-
-  // Checkbox Strikethrough Visual (Delegated to handle resets)
-  document.addEventListener('change', (e) => {
-    if (e.target && e.target.classList.contains('module-check')) {
-      const li = e.target.closest('li');
-      if (e.target.checked) li.classList.remove('inactive');
-      else li.classList.add('inactive');
-    }
-  });
-
-  // Reorder Logic (Locked by Phase)
-  document.querySelectorAll('.module-list').forEach(list => {
-    list.addEventListener('click', e => {
-      const btn = e.target.closest('.btn-move');
-      if (!btn) return;
-      const li = btn.closest('li');
-      if (btn.classList.contains('up') && li.previousElementSibling) {
-        list.insertBefore(li, li.previousElementSibling);
-      } else if (btn.classList.contains('down') && li.nextElementSibling) {
-        list.insertBefore(li.nextElementSibling, li);
-      }
-      updateMoveButtons(list);
-    });
-    updateMoveButtons(list);
-  });
-
-  function updateMoveButtons(list) {
-    const items = list.querySelectorAll('li');
-    items.forEach((li, idx) => {
-      const up = li.querySelector('.up');
-      const down = li.querySelector('.down');
-      if (up) up.disabled = idx === 0;
-      if (down) down.disabled = idx === items.length - 1;
-    });
+  function durationMinutes(value) {
+    const s = value.toLowerCase().replace(/,/g, '.').trim();
+    let m = s.match(/^(\d+(?:\.\d+)?)\s*(?:x|×|\*)\s*(\d+(?:\.\d+)?)\s*(?:menit|min)?$/);
+    if (m) return Number(m[1]) * Number(m[2]);
+    m = s.match(/^(\d+(?:\.\d+)?)\s*(?:menit|min)?$/);
+    if (m) return Number(m[1]);
+    m = s.match(/^(\d+(?:\.\d+)?)\s*jam(?:\s*(\d+)\s*menit)?$/);
+    return m ? Number(m[1]) * 60 + Number(m[2] || 0) : null;
   }
 
-  // Get active items in order
-  function getOrder(listId) {
-    const activeItems = Array.from($(listId).querySelectorAll('li'))
-      .filter(li => !li.querySelector('.module-check') || li.querySelector('.module-check').checked);
-    
-    if (activeItems.length === 0) return "- (Tidak ada modul dipilih)";
-    
-    return activeItems.map((li, i) => {
-      let name = li.querySelector('.module-name').textContent.trim();
-      if (li.dataset.key === 'task') {
-        let taskStr = $('taskMode').value === 'custom' ? $('taskCustom').value.trim() : $('taskMode').value;
-        name = `Aktivitas Mandiri (Model: ${taskStr})`;
-      }
-      if (li.dataset.key === 'game') {
-        let gameStr = $('gameType').value === 'custom' ? $('gameCustom').value.trim() : $('gameType').value;
-        name = `Game Edukatif (Jenis: ${gameStr})`;
-      }
-      return `${i+1}. ${name}`;
-    }).join('\n');
+  function updateButtons(list) {
+    [...list.children].forEach((li, i) => {
+      li.querySelector('.up').disabled = i === 0;
+      li.querySelector('.down').disabled = i === list.children.length - 1;
+    });
+  }
+  function syncUI() {
+    $('vocationalField').style.display = val('level') === 'SMK' ? 'block' : 'none';
+    $('jurusan').required = val('level') === 'SMK' && $('contextualize').checked;
+    $('sourceFields').style.display = val('sourceMode') === 'upload' ? 'grid' : 'none';
+    [['tpMode','tpCustom'],['taskMode','taskCustom'],['gameType','gameCustom']].forEach(([mode, text]) => {
+      const enabled = mode === 'tpMode' || selected(mode === 'taskMode' ? 'task' : 'game');
+      $(text).style.display = val(mode) === 'custom' && enabled ? 'block' : 'none';
+      $(text).required = val(mode) === 'custom' && enabled;
+      $(text).disabled = !enabled || val(mode) !== 'custom';
+    });
+    $('taskMode').disabled = !selected('task');
+    $('gameType').disabled = !selected('game');
+    $('teacherPass').disabled = val('teacherMode') !== 'yes';
+    $('teacherPass').required = val('teacherMode') === 'yes';
+    $('subCount').disabled = !selected('micro');
+    $('finalCount').disabled = !selected('final');
+    $('subCount').required = selected('micro');
+    $('finalCount').required = selected('final');
+    const minutes = durationMinutes(val('duration'));
+    $('durationHint').textContent = minutes > 0 ? `Total ${minutes} menit. AI membagi waktu untuk belajar, mencoba, dan memperbaiki jawaban.` : 'Contoh: 2 x 45 menit, 60 menit, atau 1 jam 30 menit. Jika memakai JP, tuliskan jumlah menitnya.';
+    document.querySelectorAll('[data-key]').forEach(li => li.classList.toggle('inactive', !li.querySelector('.module-check').checked));
+    lists.forEach(id => updateButtons($(id)));
+  }
+  function setStatus(text, error = false) {
+    $('formStatus').textContent = text;
+    $('formStatus').style.color = error ? 'var(--danger)' : 'var(--muted)';
+  }
+  function saveDraft() {
+    try {
+      const fields = {};
+      form.querySelectorAll('input[id], select[id], textarea[id]').forEach(el => {
+        if (el.id !== 'teacherPass') fields[el.id] = el.type === 'checkbox' ? el.checked : el.value;
+      });
+      const modules = Object.fromEntries(lists.map(id => [id, [...$(id).children].map(li => ({key: li.dataset.key, checked: li.querySelector('.module-check').checked}))]));
+      const qTypes = [...form.querySelectorAll('[name="qType"]')].map(el => el.checked);
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({fields, modules, qTypes}));
+    } catch (_) { /* Form remains usable when local persistence is unavailable. */ }
+  }
+  function restoreDraft() {
+    try {
+      const data = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null');
+      if (!data || typeof data !== 'object') return;
+      Object.entries(data.fields || {}).forEach(([id, value]) => {
+        const el = $(id);
+        if (!el || !form.contains(el) || id === 'teacherPass') return;
+        if (el.type === 'checkbox') el.checked = Boolean(value);
+        else if (el.tagName !== 'SELECT' || [...el.options].some(o => o.value === value)) el.value = String(value);
+      });
+      lists.forEach(id => {
+        const items = data.modules?.[id];
+        if (!Array.isArray(items)) return;
+        items.forEach(item => {
+          const li = [...$(id).children].find(x => x.dataset.key === item.key);
+          if (li) {
+            $(id).appendChild(li);
+            const cb = li.querySelector('.module-check');
+            if (!cb.disabled) cb.checked = Boolean(item.checked);
+          }
+        });
+      });
+      if (Array.isArray(data.qTypes)) [...form.querySelectorAll('[name="qType"]')].forEach((el, i) => {
+        if (typeof data.qTypes[i] === 'boolean') el.checked = data.qTypes[i];
+      });
+      setStatus('Isian terakhir dipulihkan pada perangkat ini. Periksa lalu buat prompt kembali.');
+    } catch (_) { /* Ignore damaged or inaccessible drafts. */ }
+  }
+  function markDirty() {
+    dirty = Boolean($('promptOutput').value);
+    $('btnCopy').disabled = $('btnDownload').disabled = dirty || !$('promptOutput').value;
+    if (dirty) $('tokenCount').textContent = 'Isian berubah — klik Buat Prompt untuk memperbarui hasil.';
+    syncUI();
+    saveDraft();
+  }
+  form.addEventListener('input', markDirty);
+  form.addEventListener('change', markDirty);
+  lists.forEach(id => $(id).addEventListener('click', e => {
+    const button = e.target.closest('.btn-move');
+    if (!button || button.disabled) return;
+    const li = button.closest('li');
+    if (button.classList.contains('up') && li.previousElementSibling) $(id).insertBefore(li, li.previousElementSibling);
+    else if (li.nextElementSibling) $(id).insertBefore(li.nextElementSibling, li);
+    markDirty();
+  }));
+
+  function moduleInstructions(id) {
+    const rows = [...$(id).children].filter(li => li.querySelector('.module-check').checked);
+    return rows.length ? rows.map((li, i) => {
+      const key = li.dataset.key;
+      let extra = '';
+      if (key === 'task') extra = `\nModel/instruksi guru: ${val('taskMode') === 'custom' ? val('taskCustom') : val('taskMode')}`;
+      if (key === 'game') extra = `\nMekanika pilihan guru: ${val('gameType') === 'custom' ? val('gameCustom') : val('gameType')}`;
+      return `${i+1}. ${li.querySelector('.module-name').textContent.trim()}\n${definitions[key]}${extra}`;
+    }).join('\n\n') : 'Tidak ada komponen tambahan dipilih pada fase ini.';
   }
 
-  // Builder
+  function buildPrompt(minutes) {
+    const qTypes = [...form.querySelectorAll('[name="qType"]:checked')].map(el => el.value);
+    const isSMK = val('level') === 'SMK';
+    const standalone = val('studyMode') === 'mandiri';
+    const db = val('database');
+    const source = val('sourceMode') === 'upload'
+      ? `Guru akan melampirkan/menempelkan sumber ${val('sourceType')} bersama prompt ini. Pastikan sumber benar-benar terbaca; jika belum ada/tidak terbaca, minta sumber tersebut sebelum membuat materi final. Perlakuan: ${val('sourceTreatment')}. Bandingkan jenjang dan cakupan sumber dengan sasaran di atas. Adaptasikan bahasa serta tuntutan berpikir; jangan hanya mengganti label kelas. Tandai kekeliruan/kontradiksi sumber dan usulkan koreksi dengan alasan, jangan diam-diam meneruskannya. Pisahkan pengayaan dari isi sumber dalam catatan guru; jangan mengarang kutipan atau halaman.`
+      : 'Susun materi akurat sesuai topik dan jenjang, gunakan konsep mapel yang dapat dipertanggungjawabkan. Jangan mengarang sumber, data faktual, atau standar kurikulum. Nyatakan data kasus buatan sebagai ilustrasi. Bila fakta mutakhir diperlukan dan tidak dapat diperiksa, tandai untuk verifikasi guru.';
+    const dbRules = db === 'no'
+      ? 'Gunakan penyimpanan lokal dengan try/catch dan fallback memori jika penyimpanan ditolak. Jelaskan bahwa data lokal hanya ada di browser/perangkat itu dan belum dikirim ke guru.'
+      : `${db === 'canva_sheet' ? 'Target Canva Sheets: gunakan integrasi resmi yang benar-benar tersedia pada lingkungan Canva saat implementasi. Jangan mengarang SDK, fungsi, atau endpoint; jangan menganggap wajib memiliki URL Apps Script.' : 'Target Google Spreadsheet: sediakan adapter untuk endpoint Apps Script/API yang nantinya diisi guru; jangan mengarang URL atau mengklaim koneksi telah aktif.'} Jika integrasi belum tersedia/terkonfigurasi atau gagal, simpan lokal dengan try/catch dan fallback memori. Tampilkan status jujur: lokal, belum dikirim, sedang mengirim, berhasil diterima, atau gagal. Tandai berhasil hanya setelah konfirmasi layanan; sediakan percobaan kirim ulang tanpa menduplikasi catatan.`;
+    const platform = $('platform').selectedOptions[0].textContent;
+    const target = $('publish').selectedOptions[0].textContent;
+    const selectedKeys = lists.flatMap(id => [...$(id).children].filter(li => li.querySelector('.module-check').checked).map(li => li.dataset.key));
+    const warnings = [];
+    if (selected('micro') && Number(val('subCount')) > 6) warnings.push('Jumlah soal per submateri cukup besar; pastikan pembagian waktu diperiksa.');
+    if (minutes < 60 && selectedKeys.filter(k => ['task','game','simulation','case'].includes(k)).length >= 3) warnings.push('Banyak aktivitas dipilih untuk waktu singkat. Prompt meminta pembagian sesi/pengayaan jika tidak muat.');
+    setStatus(warnings.length ? warnings.join(' ') : 'Prompt siap. Salin ke platform pilihan; lampirkan materi acuan jika dipilih. Hasil AI tetap perlu ditinjau sebelum digunakan siswa.');
+
+    return `Bertindaklah sebagai perancang pembelajaran dan pengembang media interaktif. Buat media menggunakan ${platform}, target publikasi ${target}. Media harus membantu siswa membangun, menggunakan, dan meninjau pemahaman. Kedalaman dinilai dari penjelasan, proses berpikir, dan bukti belajar, bukan banyaknya layar, animasi, klik, atau lama menunggu.
+
+1. KONTEKS DAN SUMBER
+- Mapel: ${val('subject')}
+- Topik: ${val('topic')}
+- Jenjang: ${val('level')}; kelas yang tersedia: ${val('classList')}
+${isSMK ? `- Jurusan: ${val('jurusan') || 'tidak ditentukan'}; ${$('contextualize').checked ? 'kontekstualisasikan contoh pada bidang tersebut tanpa mengaburkan konsep mapel.' : 'gunakan substansi umum mapel; tidak perlu konteks khusus jurusan.'}` : ''}
+- Penggunaan: ${standalone ? 'belajar mandiri/PJJ; instruksi, penjelasan, contoh, bantuan, dan cara memeriksa hasil harus cukup tanpa penjelasan lisan guru.' : 'didampingi guru; sediakan pertanyaan diskusi dan catatan fasilitasi, tetapi instruksi siswa tetap jelas.'}
+- Kondisi awal/prasyarat: ${val('learnerProfile') || 'belum diberikan; identifikasi prasyarat minimum dan periksa melalui pertanyaan awal. Jangan menganggap semua siswa sudah menguasainya.'}
+- Durasi: ${val('duration')} = ${minutes} menit. Ini anggaran kegiatan belajar, bukan timer pengunci.
+- Sumber: ${source}
+- TP: ${val('tpMode') === 'custom' ? `Gunakan TP guru berikut sebagai acuan utama, jangan mengubah tuntutan atau kriteria secara diam-diam:\n${val('tpCustom')}` : 'Usulkan 2–3 TP terukur yang realistis untuk cakupan dan durasi ini. Rumuskan kemampuan, objek, serta kualitas bukti yang diharapkan. Tandai sebagai usulan AI untuk ditinjau guru; jangan mengklaim selaras CP resmi jika CP tidak disediakan.'}
+
+2. RANCANGAN BELAJAR SEBELUM IMPLEMENTASI
+Tentukan unit/submateri dan simpan peta ringkas: TP → konsep/prasyarat → aktivitas → bukti hasil siswa → kriteria keberhasilan → soal/rubrik. Tiap TP harus mendapat penjelasan, kesempatan berlatih, dan bukti yang memadai. Kemampuan menganalisis/membuat karya tidak boleh disimpulkan hanya dari pilihan ganda sederhana. Kriteria diturunkan dari TP, tidak otomatis berupa ambang 75% untuk semua hal.
+Alokasikan waktu untuk mempelajari contoh, mencoba, menghasilkan bukti, membaca umpan balik, dan memperbaiki. Total kegiatan inti harus ${minutes} menit sebagai perkiraan; siswa boleh lebih cepat/lambat. Bila cakupan tidak muat, jangan menipiskan seluruh materi: buat pembagian sesi yang jelas atau tandai kegiatan tambahan sebagai pengayaan di luar alokasi, lengkap dengan perkiraan waktunya. Jangan menghapus pilihan guru diam-diam.
+Bangun siklus kecil per unit: pertanyaan/prediksi → penjelasan konsep → contoh beralasan → percobaan siswa → umpan balik → perbaikan. Siklus ini ada di dalam urutan fase besar memahami–mengaplikasi–merefleksi. Unit boleh terdiri dari beberapa layar/kartu; tidak ada batas total 2–4 kartu dan tidak ada target panjang teks yang memaksa isian kosong. Ringkasan tidak menggantikan materi inti.
+Pertahankan urutan komponen pilihan guru sebagai susunan utama. Komponen yang tidak dipilih tidak perlu dibuat menjadi menu terpisah; contoh singkat, latihan minimum, penjelasan, dan umpan balik tetap boleh terintegrasi sebagai pendukung wajib TP.
+
+3. STRUKTUR DAN AKTIVITAS TERPILIH
+Awal: cover → identitas (nama dan dropdown kelas: ${val('classList')}) → petunjuk singkat, TP bahasa siswa, kriteria keberhasilan → menu/progres. Jelaskan cara belajar, menyimpan, melanjutkan, dan menyerahkan pekerjaan. Jangan menganggap siswa telah belajar hanya karena membuka halaman.
+
+FASE MEMAHAMI
+${moduleInstructions('listMemahami')}
+
+FASE MENGAPLIKASI
+${moduleInstructions('listMengaplikasi')}
+
+FASE MEREFLEKSI
+${moduleInstructions('listMerefleksi')}
+
+4. ASESMEN, BANTUAN, DAN UMPAN BALIK
+- Cek pemahaman: ${selected('micro') ? `tepat ${val('subCount')} butir utama PER unit/submateri. Definisikan daftar unit terlebih dahulu dan hitung total = jumlah unit × ${val('subCount')}; jangan menafsirkan jumlah ini sebagai total seluruh materi. Butir remedial/pengayaan diberi label terpisah.` : 'tidak menggunakan paket mikrokuis terpisah; tetap sisipkan percobaan kecil dan umpan balik dalam materi untuk memastikan pemahaman.'}
+- Asesmen akhir: ${selected('final') ? `tepat ${val('finalCount')} butir utama, seluruhnya lengkap.` : 'tidak membuat kuis akhir terpisah; gunakan bukti aktivitas dan pemeriksaan berdasarkan kriteria TP.'}
+- Distribusi kognitif: ${val('blueprint')}. Jika memakai persentase, bulatkan menjadi jumlah bulat yang totalnya tepat dan jelaskan penyesuaian di catatan guru. Kesesuaian TP lebih utama; catat bila distribusi pilihan guru perlu diadaptasi.
+- Bentuk yang diizinkan: ${qTypes.length ? qTypes.join('; ') : 'pilihan ganda kontekstual sebagai bentuk otomatis'}; pilih yang sesuai konsep, tidak perlu memaksakan semua bentuk. Jumlah butir multi-bagian dihitung sebagai satu butir utama dan diberi aturan skor yang jelas.
+- Level kognitif ditentukan tuntutan berpikir. Soal analisis memerlukan hubungan antarbukti; evaluasi memerlukan kriteria dan pertimbangan. Gunakan pengecoh masuk akal berdasarkan miskonsepsi; hindari satu pilihan sangat baik di antara pilihan yang jelas absurd. Jangan menyebut soal HOTS hanya karena panjang atau berlabel C4/C5.
+- Metadata setiap butir: id, unit, TP, tuntutan berpikir/level beserta alasan singkat, stimulus, bentuk, kunci atau rubrik, penjelasan tiap pilihan, miskonsepsi, dan tindak lanjut. Peta guru dihasilkan dari data yang sama agar konsisten.
+- Interaksi harus sesuai bentuk: mengurutkan harus menerima serta memeriksa seluruh urutan; menjodohkan memeriksa seluruh pasangan; klasifikasi memeriksa tiap objek; benar/salah disertai alasan memiliki respons alasan. Sediakan alternatif tombol/select yang dapat dipakai HP dan keyboard untuk drag-and-drop.
+- Formatif: salah → petunjuk spesifik tanpa langsung membocorkan semua jawaban → upaya perbaikan → pembahasan setelah upaya berikutnya/permintaan siswa → latihan setara bila perlu. Jawaban benar juga mendapatkan alasan. Jangan berpindah otomatis beberapa detik setelah feedback; siswa menekan Lanjut ketika siap.
+- Bantuan bertahap: arahkan perhatian ke bukti, ingatkan konsep, lalu contoh sebagian terselesaikan. Tantangan lanjut memperluas konteks/pertimbangan, bukan sekadar menambah jumlah soal.
+- Jawaban terbuka: sediakan format respons, rubrik sederhana yang terlihat sebelum tugas, contoh pembanding setelah usaha siswa, dan kesempatan revisi. Tanpa layanan penilai yang benar-benar tersedia, gunakan pemeriksaan mandiri/guru dan status 'menunggu tinjauan'. Jangan menyamakan jumlah kata, isian tidak kosong, atau pencocokan kata kunci dengan penilaian kualitas.
+- Hasil menampilkan bukti per TP, bagian yang belum diperiksa, serta tautan materi/latihan perbaikan yang spesifik. Pisahkan status sudah dibuka, sudah dikerjakan, sudah diperbaiki, dan sudah dinilai. Jangan memberi klaim tuntas hanya dari klik, waktu, atau skor game.
+
+5. TAMPILAN, PENYIMPANAN, DAN IMPLEMENTASI
+- Gaya: ${val('mediaStyle')}. Nyaman untuk laptop/layar 16:9 dan otomatis responsif di HP; konten boleh mengalir/scroll agar teks tidak terpotong. Berikan ukuran teks dan target sentuh yang nyaman, label formulir, fokus keyboard, kontras terbaca, dan penjelasan visual.
+- Navigasi: HOME kiri atas; KEMBALI dan SELANJUTNYA berdampingan kiri bawah. Jangan menutupi isi. Siswa dapat kembali mempelajari materi, menyimpan draf, serta melanjutkan tanpa kehilangan respons. Jangan mengunci berdasarkan waktu minimum.
+- Gambar: ${val('mediaImages')}. Visual harus membantu pemahaman dan memiliki teks alternatif; siapkan fallback bila gambar luar gagal. Hindari aset berat yang tidak menambah nilai belajar.
+- Audio: ${val('mediaAudio')}${val('mediaAudio').startsWith('Tanpa') ? ' Jangan menambahkan tombol suara yang tidak berfungsi.' : ' Mulai audio hanya setelah interaksi pengguna; tangani browser yang memblokirnya dan sediakan mute. Jangan menjamin audio selalu berbunyi.'}
+- Penyimpanan: ${dbRules}
+- Catatan belajar yang disimpan mengikuti aktivitas aktif: identitas seperlunya, id sesi/unit/TP, jawaban dan percobaan, status bukti, hasil kuis per TP, ${selected('task') ? 'hasil tugas/LKPD dan revisinya, ' : ''}${selected('game') ? 'skor game terpisah, ' : ''}${selected('reflection') ? 'refleksi, ' : ''}serta progres. Sediakan pemulihan draf dan ekspor/ringkasan hasil untuk penyerahan. Pisahkan data siswa/sesi pada perangkat bersama; reset satu siswa tidak menghapus semua siswa. Jangan mengirim PIN guru atau data pribadi yang tidak diperlukan.
+${selected('game') && db !== 'no' ? '- Leaderboard game hanya mengambil skor yang benar-benar tersimpan pada layanan yang terhubung; gunakan nama tampilan yang sesuai dan jangan menampilkan jawaban pribadi. Jika belum terhubung, tampilkan status belum tersedia, bukan peringkat contoh yang diklaim nyata.' : ''}
+- Mode guru: ${val('teacherMode') === 'yes' ? `aktif dengan PIN ${JSON.stringify(val('teacherPass'))}. Sertakan peta TP, materi/sumber, alokasi waktu, kunci, rubrik, dan pemeriksaan kelengkapan. PIN pada HTML statis hanya pengunci antarmuka, bukan keamanan data. Rubrik siswa tetap dapat dibaca tanpa PIN.` : 'nonaktif; jangan menambahkan panel/password guru. Kriteria siswa, pembahasan setelah upaya, serta data pemetaan internal tetap disediakan.'}
+${val('publish') === 'github' ? '- Untuk GitHub Pages gunakan path relatif yang valid. Jangan bergantung pada SDK khusus Canva tanpa fallback dan petunjuk integrasi yang sesuai.' : ''}
+${val('publish') === 'gsites' ? '- Untuk Google Sites/iframe, tangani penyimpanan browser yang diblokir dan perubahan ukuran bingkai; aplikasi tetap dapat digunakan.' : ''}
+${val('publish') === 'gas' ? '- Untuk Google Apps Script, jelaskan langkah membungkus halaman dengan HtmlService/doGet jika diperlukan. Jangan mengklaim satu file HTML sudah menyediakan backend aktif.' : ''}
+
+6. PEMERIKSAAN SEBELUM MENYERAHKAN
+Periksa hasil secara konkret: seluruh TP mendapat materi, latihan, dan bukti; kedalaman sesuai jenjang; sumber tidak dikurangi menjadi rangkuman semata; setiap unit memiliki komponen minimum; jumlah soal dan distribusi tepat; kunci/urutan/pasangan/rubrik konsisten dengan pembahasan; interaksi sesuai bentuk; pilihan komponen dihormati; alokasi inti sesuai durasi; siswa dapat mencoba, membaca feedback, dan merevisi; status belum dinilai tidak disebut tuntas; penyimpanan/ekspor memuat bukti aktivitas aktif; navigasi, pemulihan draf, dan fallback berfungsi. Perbaiki ketidaksesuaian sebelum final. Jangan mengklaim pengujian runtime yang tidak dilakukan.
+
+KONTRAK OUTPUT
+Hasilkan HTML/CSS/JavaScript lengkap dalam satu file yang dapat digunakan pada platform sasaran. Materi, stimulus, soal, feedback, rubrik, dan fungsi harus nyata, bukan placeholder/TODO. Sediakan model data terstruktur untuk unit, TP, aktivitas, dan soal; renderer harus benar-benar mendukung bentuk yang dipilih. Rancangan ringkas disimpan pada catatan guru (jika aktif) atau komentar terstruktur, bukan instruksi teknis di layar siswa. Jika sumber wajib belum terbaca, minta sumber terlebih dahulu; jika keterbatasan lingkungan mencegah fitur berjalan, jelaskan batas nyata dan berikan fallback yang jujur. Jangan mengorbankan isi inti demi dekorasi atau memotong array soal.`.replace(/\n{3,}/g, '\n\n');
+  }
+
   form.addEventListener('submit', e => {
     e.preventDefault();
-    if(!$('subject').value || !$('topic').value) {
-      alert('Mapel dan Materi Inti wajib diisi!');
+    syncUI();
+    const minutes = durationMinutes(val('duration'));
+    const requiredText = ['subject','topic','classList'];
+    if (val('tpMode') === 'custom') requiredText.push('tpCustom');
+    if (selected('task') && val('taskMode') === 'custom') requiredText.push('taskCustom');
+    if (selected('game') && val('gameType') === 'custom') requiredText.push('gameCustom');
+    if (val('teacherMode') === 'yes') requiredText.push('teacherPass');
+    if (val('level') === 'SMK' && $('contextualize').checked) requiredText.push('jurusan');
+    for (const id of requiredText) {
+      if (!val(id)) {
+        setStatus('Lengkapi isian yang wajib sebelum membuat prompt.', true);
+        $(id).focus();
+        return;
+      }
+    }
+    if (!minutes || minutes < 1 || minutes > 1440) {
+      setStatus('Isi durasi 1–1440 menit, misalnya 2 x 45 menit atau 60 menit.', true);
+      $('duration').focus();
       return;
     }
-
-    const val = id => $(id).value.trim();
-    const isSMK = val('level') === 'SMK';
-    const isContext = $('contextualize').checked;
-    
-    const dbVal = val('database');
-    const isDB = dbVal !== 'no';
-    
-    const qTypes = Array.from(document.querySelectorAll('input[name="qType"]:checked')).map(cb => cb.value);
-    
-    const sourceInstruction = val('sourceMode') === 'ai' 
-      ? 'AI susun materi secara logis dan mandiri sesuai topik.' 
-      : `SAYA MELAMPIRKAN DOKUMEN MATERI (${val('sourceType')}). Tunggu hingga terbaca. ATURAN: ${val('sourceTreatment')}`;
-
-    // Target Publikasi Logic
-    const publishTarget = val('publish');
-    let publishNote = '';
-    if (publishTarget === 'gsites') {
-      publishNote = 'PENTING: Karena target publikasi adalah Google Sites (media dimuat dalam iframe), PASTIKAN penanganan localStorage memiliki mekanisme try-catch/fallback agar aplikasi tidak mogok (crash) jika browser memblokir kuki pihak ketiga.';
-    } else if (publishTarget === 'github') {
-      publishNote = 'PENTING: Target publikasi adalah GitHub Pages. Pastikan seluruh struktur path aset adalah path relatif yang benar dan valid.';
-    }
-
-    // Database Guardrail Logic
-    let dbInstruction = 'Simpan progress, nama, dan skor secara lokal di peramban siswa (Local Storage).';
-    if (isDB) {
-      const dbType = dbVal === 'canva_sheet' ? 'Canva Sheets' : 'Google Spreadsheet API';
-      dbInstruction = `Terdapat kebutuhan integrasi skor ke ${dbType}. KARENA ENDPOINT BELUM DIBERIKAN SEKARANG, Anda WAJIB:
-1. Membuat antarmuka/adapter fungsi penyimpanan data di kode JavaScript.
-2. Menggunakan variabel placeholder yang JELAS (contoh: YOUR_DATABASE_ENDPOINT).
-3. DILARANG mengklaim integrasi aktif atau memalsukan koneksi sukses jika variabel belum diisi.
-4. WAJIB menyediakan fallback penyimpanan sementara ke Local Storage jika endpoint kosong.
-5. Sediakan UI yang menampilkan status koneksi secara jujur (misal: "Menyimpan secara lokal (Database belum dikonfigurasi)").`;
-    }
-
-    const prompt = `Bertindaklah sebagai Instructional Designer dan Web Developer ahli. Buatlah satu paket Media Pembelajaran Interaktif (MPI) menggunakan ${$('platform').options[$('platform').selectedIndex].text}.
-
-==================================================
-LAPIS 1: PEDAGOGICAL & INSTRUCTIONAL DESIGN
-==================================================
-📌 KONTEKS PEMBELAJARAN
-- Mata Pelajaran: ${val('subject')}
-- Topik Inti: ${val('topic')}
-- Jenjang: ${val('level')}${isSMK ? ` (Jurusan: ${val('jurusan')})` : ''}
-${isSMK ? `- Pendekatan Materi: ${isContext ? 'WAJIB dikontekstualisasikan (analogi, studi kasus, contoh) secara spesifik dengan bidang industri/kejuruan ' + val('jurusan') : 'Fokuskan murni pada substansi umum mata pelajaran, JANGAN dikaitkan secara spesifik dengan jurusan.'}` : ''}
-- Kelas Tersedia: ${val('classList')}
-- Durasi: ${val('duration')}
-
-📚 SUMBER MATERI
-${sourceInstruction}
-
-🎯 TUJUAN PEMBELAJARAN
-${val('tpMode') === 'custom' ? val('tpCustom') : 'WAJIB rumuskan 2-3 TP spesifik dan operasional menggunakan format (KKO + Objek + Kriteria batas nyata). JANGAN gunakan teks placeholder.'}
-
-📝 PENGATURAN ASESMEN & EVALUASI
-- Formatif (Per Submateri): ${val('subCount')} butir.
-- Sumatif (Kuis Akhir): ${val('finalCount')} butir.
-- Distribusi Kognitif: ${val('blueprint')}.
-- Variasi Bentuk Soal: ${qTypes.length > 0 ? qTypes.join(', ') : 'Pilihan ganda'}.
-- Aturan Kuis: Setiap butir soal dalam kode WAJIB menyertakan metadata internal (TP yang diukur, kunci akurat, dan feedback edukatif mengapa jawaban benar/salah).
-
-==================================================
-LAPIS 2: MEDIA & INTERACTION DESIGN
-==================================================
-Rancang UI/UX yang mencakup komponen berikut sesuai urutan fase pedagogis ini:
-
-[STRUKTUR INTI AWAL]
-1. Halaman Cover & Judul
-2. Identitas Siswa (WAJIB menggunakan elemen <select> dropdown untuk Kelas berdasarkan opsi: ${val('classList')}, dan input teks Nama)
-3. Petunjuk Penggunaan & TP
-4. Menu Utama (Dashboard Navigasi)
-
-[FASE 1: MEMAHAMI (Membangun Konsep)]
-${getOrder('listMemahami')}
-*Aturan Chunking: Dilarang menyajikan "wall of text". Pecah materi menjadi 2-4 kartu terfokus.*
-
-[FASE 2: MENGAPLIKASI (Interaksi)]
-${getOrder('listMengaplikasi')}
-*Kewajiban Game (Jika Dipilih): Mekanika game HARUS memberikan kontribusi nyata terhadap pencapaian minimal satu TP. Dilarang menjadikan game sebagai aktivitas dekoratif atau hiburan semata tanpa fungsi evaluasi.*
-
-[FASE 3: MEREFLEKSI (Penarikan Makna)]
-${getOrder('listMerefleksi')}
-
-🕹️ DIFERENSIASI KESIAPAN (SCAFFOLDING)
-Sediakan opsi "Bantuan Terpandu" bagi siswa yang kesulitan (hint ekstra), dan opsi "Tantangan Lanjut" bagi siswa mahir di studi kasus/latihan.
-
-👨‍🏫 MODE GURU
-${val('teacherMode') === 'yes' ? `Tambahkan Ikon Guru (👨‍🏫) di sudut Halaman Cover. Jika diklik, minta password "${val('teacherPass')}" untuk membuka panel rahasia berisi Kunci Jawaban, Rubrik, dan Pemetaan TP.` : 'Tidak menggunakan Mode Guru.'}
-
-==================================================
-LAPIS 3: TECHNICAL & QUALITY GATE
-==================================================
-🖥️ AKSESIBILITAS & ERGONOMI (WAJIB)
-- Desain antarmuka WAJIB berasio 16:9 agar optimal di Papan Interaktif (Interactive Flat Panel) / Laptop, dan otomatis menyesuaikan bentuk di HP siswa.
-- Navigasi Papan Interaktif: Letakkan Ikon "HOME" di Kiri Atas. Letakkan Tombol "KEMBALI" di Kiri Bawah, dan Tombol "SELANJUTNYA" TEPAT di sebelah kanannya (berdampingan di Kiri Bawah). JANGAN letakkan tombol navigasi di sudut kanan agar mudah dijangkau guru.
-${publishNote}
-
-💾 PENYIMPANAN DATA & DATABASE
-${dbInstruction}
-
-🖼️ ASET VISUAL & AUDIO
-- Gaya Tampilan: ${val('mediaStyle')}
-- Ilustrasi: ${val('mediaImages')}
-- Audio: ${val('mediaAudio')} (WAJIB sediakan tombol Mute on/off).
-
-KONTRAK OUTPUT:
-Hasilkan kode HTML/CSS/JS secara utuh dalam satu file. Jangan memotong array pertanyaan.`;
-
-    $('promptOutput').value = prompt;
-    $('tokenCount').textContent = `~${prompt.split(/\s+/).length} kata | Siap disalin`;
+    if (!form.reportValidity()) return;
+    $('promptOutput').value = buildPrompt(minutes);
+    $('tokenCount').textContent = `${$('promptOutput').value.split(/\s+/).length.toLocaleString('id-ID')} kata · Siap disalin`;
+    dirty = false;
+    $('btnCopy').disabled = $('btnDownload').disabled = false;
+    saveDraft();
   });
-
-  // Fallback Copy Function
-  function copyToClipboard(text) {
-    if (navigator.clipboard && window.isSecureContext) {
-      navigator.clipboard.writeText(text)
-        .then(() => copySuccess())
-        .catch(() => fallbackCopy(text));
-    } else {
-      fallbackCopy(text);
-    }
-  }
-
-  function fallbackCopy(text) {
-    const textArea = document.createElement("textarea");
-    textArea.value = text;
-    textArea.style.position = "fixed";
-    document.body.appendChild(textArea);
-    textArea.focus();
-    textArea.select();
+  $('promptOutput').addEventListener('input', () => {
+    $('btnCopy').disabled = $('btnDownload').disabled = dirty || !$('promptOutput').value.trim();
+    if (!dirty) $('tokenCount').textContent = `${$('promptOutput').value.trim().split(/\s+/).length.toLocaleString('id-ID')} kata · Diedit manual`;
+  });
+  $('btnCopy').addEventListener('click', async () => {
+    if (dirty || !$('promptOutput').value.trim()) return;
+    let success = false;
     try {
-      document.execCommand('copy');
-      copySuccess();
-    } catch (err) {
-      alert('Gagal menyalin otomatis. Silakan blok teks dan salin secara manual.');
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText($('promptOutput').value);
+        success = true;
+      }
+    } catch (_) { /* Fall through to selection-based copy. */ }
+    if (!success) {
+      $('promptOutput').focus();
+      $('promptOutput').select();
+      try { success = document.execCommand('copy'); } catch (_) { /* Manual copy below. */ }
     }
-    document.body.removeChild(textArea);
-  }
-
-  function copySuccess() {
-    const btn = $('btnCopy'); 
-    btn.textContent = '✅ Berhasil Disalin';
-    setTimeout(() => btn.textContent = '📋 Salin Prompt', 2000);
-  }
-
-  $('btnCopy').addEventListener('click', () => {
-    const text = $('promptOutput').value;
-    if (!text) return alert('Buat prompt terlebih dahulu!');
-    copyToClipboard(text);
+    clearTimeout(copyTimer);
+    $('btnCopy').textContent = success ? '✓ Berhasil disalin' : 'Salin manual (Ctrl/Cmd+C)';
+    if (!success) setStatus('Teks sudah dipilih. Tekan Ctrl+C atau Cmd+C, atau gunakan menu Salin perangkat.');
+    copyTimer = setTimeout(() => { $('btnCopy').textContent = '📋 Salin Prompt'; }, 2500);
   });
-
-  // Download
   $('btnDownload').addEventListener('click', () => {
-    const text = $('promptOutput').value;
-    if (!text) return alert('Buat prompt terlebih dahulu!');
-    const blob = new Blob([text], {type: 'text/plain'});
+    if (dirty || !$('promptOutput').value.trim()) return;
+    const url = URL.createObjectURL(new Blob([$('promptOutput').value], {type:'text/plain;charset=utf-8'}));
     const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `Prompt_MPI_${$('subject').value.replace(/[^a-zA-Z0-9]/g, '_')}.txt`;
+    a.href = url;
+    a.download = `Prompt_MPI_${val('subject').replace(/[^a-zA-Z0-9_-]/g, '_') || 'Pembelajaran'}.txt`;
+    document.body.appendChild(a);
     a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   });
-
-  // Reset Formulir
   $('btnReset').addEventListener('click', () => {
-    // We use reload to ensure 100% clean state of DOM modules without complex innerHTML tracking
-    if(confirm('Anda yakin ingin mereset formulir dan menghapus semua pilihan?')) { 
-      window.location.reload();
-    }
+    if (!confirm('Reset semua isian dan urutan komponen? Prompt yang belum diunduh akan dihapus.')) return;
+    form.reset();
+    clearTimeout(copyTimer);
+    $('btnCopy').textContent = '📋 Salin Prompt';
+    lists.forEach(id => initialOrders[id].forEach(key => $(id).appendChild([...$(id).children].find(li => li.dataset.key === key))));
+    try { localStorage.removeItem(DRAFT_KEY); } catch (_) { /* Reset still works. */ }
+    $('promptOutput').value = '';
+    $('tokenCount').textContent = 'Belum dibuat';
+    $('btnCopy').disabled = $('btnDownload').disabled = true;
+    dirty = false;
+    setStatus('Formulir direset. Isi konteks pembelajaran untuk memulai.');
+    syncUI();
   });
-
+  restoreDraft();
+  syncUI();
+  $('btnCopy').disabled = $('btnDownload').disabled = true;
 })();
 </script>
 </body>
